@@ -315,7 +315,7 @@ public final class PetTracker {
         }
         int dy = (int) Math.round(y - player.getY());
         var line = PetText.msg(PetText.name(pet), PetText.dim("  \u00b7  "),
-                TextUtil.hex(PetBrain.arrow(player.getYRot(), dx, dz) + " ", PetText.BRAND),
+                TextUtil.hex(PetBrain.arrow(player.getYRot(), dx, dz) + " ", TextUtil.PRIMARY),
                 PetText.value(PetBrain.distance(distance)));
         if (Math.abs(dy) >= 3) {
             line.append(TextUtil.muted(dy > 0 ? "  \u25b2" + dy : "  \u25bc" + (-dy)));

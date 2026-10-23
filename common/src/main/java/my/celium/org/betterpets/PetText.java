@@ -1,5 +1,6 @@
 package my.celium.org.betterpets;
 
+import my.celium.org.util.ChatVoice;
 import my.celium.org.util.TextUtil;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
@@ -8,29 +9,23 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.Entity;
 
 /**
- * Chat building blocks for Better Pets, one voice for every message:
- * {@code [Pets] ✔ Rex came running.} / {@code [Pets] ✘ ...}. Plain text is
- * soft grey, pet names keep their own colors, values are bright, buttons wear
- * the brand color. Everything is vanilla components, so vanilla clients render it as is.
+ * Chat building blocks for Better Pets, on Mycel's shared message kit:
+ * {@code Pets › ✔ Rex came running.} / {@code Pets › ✘ ...}. Plain text is
+ * soft grey, pet names keep their own colors, values are wiki purple, buttons
+ * wiki blue. Everything is vanilla components, so vanilla clients render it as is.
  */
 public final class PetText {
-    static final int BRAND = 0xFFB86B;
-    static final int NAME = 0xFFFFFF;
-    static final int VALUE = 0xFFE7B3;
-    static final int BUTTON = BRAND;
-    static final int GOOD = 0x86EFAC;
-    static final int DEAD = 0xEF5350;
-    static final int HEART = 0xFF6B81;
-    /** Brackets, separators, list numbers. {@link TextUtil#FAINT} disappears on the chat backdrop. */
-    static final int DIM = 0x8B93A1;
+    static final ChatVoice VOICE = TextUtil.voice("Pets");
+    static final int NAME = TextUtil.BRIGHT;
+    static final int VALUE = TextUtil.INFO;
+    static final int BUTTON = TextUtil.ACCENT;
+    static final int GOOD = TextUtil.SUCCESS;
+    static final int DEAD = TextUtil.ERROR;
+    static final int HEART = TextUtil.PRIMARY;
+    /** Brackets, separators, list numbers. */
+    static final int DIM = TextUtil.FAINT;
 
     private PetText() {
-    }
-
-    /** {@code [Pets] } prefix. */
-    public static MutableComponent prefix() {
-        return TextUtil.empty().append(dim("[")).append(TextUtil.hex("Pets", BRAND))
-                .append(dim("] "));
     }
 
     /** Secondary text that stays readable on the chat backdrop. */
@@ -52,31 +47,24 @@ public final class PetText {
         return out;
     }
 
-    /**
-     * A message from parts: strings become soft body text, components are
-     * appended as they are. {@code msg(name(pet), " came running.")}
-     */
+    /** {@code msg(name(pet), " came running.")}: strings become body text, components stay as they are. */
     public static MutableComponent msg(Object... parts) {
-        MutableComponent out = TextUtil.empty();
-        for (Object part : parts) {
-            out.append(part instanceof Component component ? component : TextUtil.body(String.valueOf(part)));
-        }
-        return out;
+        return TextUtil.msg(parts);
     }
 
-    /** {@code [Pets] message}. */
+    /** {@code Pets › message}. */
     public static MutableComponent info(Object... parts) {
-        return prefix().append(msg(parts));
+        return VOICE.note(parts);
     }
 
-    /** {@code [Pets] ✔ message}. */
+    /** {@code Pets › ✔ message}. */
     public static MutableComponent ok(Object... parts) {
-        return prefix().append(TextUtil.hex("✔ ", GOOD)).append(msg(parts));
+        return VOICE.ok(parts);
     }
 
-    /** {@code [Pets] ✘ message}. */
+    /** {@code Pets › ✘ message}. */
     public static MutableComponent fail(Object... parts) {
-        return prefix().append(TextUtil.hex("✘ ", DEAD)).append(msg(parts));
+        return VOICE.fail(parts);
     }
 
     /** A bright value inside a message: a number, a time, a command. */
@@ -127,7 +115,7 @@ public final class PetText {
                 .withHoverEvent(new HoverEvent.ShowText(TextUtil.body(hover))));
     }
 
-    /** Styled like the {@code [Pets]} tag: dim brackets, brand label. The parent's click covers all three parts. */
+    /** {@code [label]}: dim brackets, accent label. The parent's click covers all three parts. */
     private static MutableComponent buttonText(String label) {
         return TextUtil.empty().append(dim("[")).append(TextUtil.hex(label, BUTTON)).append(dim("]"));
     }

@@ -6,6 +6,14 @@ Better Pets is versioned semantically (`MAJOR.MINOR.PATCH`).
 It runs on Minecraft 26.3 (Fabric + Forge + NeoForge, Java 25) and requires
 [Mycel](https://github.com/MyCelium-GG/MyCel-Lib) (`my.celium.org`).
 
+## [1.0.2] - Unreleased
+
+### Changed
+
+- Requires Mycel 1.3.1. Messages use Mycel's shared message kit: they start
+  with a bold `Pets ›` tag like every MyCelium mod, and every color comes from
+  the MyCelium wiki (no more orange brand or legacy colors).
+
 ## [1.0.1] - 2026-10-19
 
 ### Changed

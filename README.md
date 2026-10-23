@@ -28,7 +28,7 @@ horses, donkeys, mules, llamas, camels, nautiluses and modded tamables.
 - **`/pets`** lists them all, one line each:
 
   ```
-  [Pets] Your pets (5)
+  Pets › Your pets (5)
   1. Rex ♥40/40 sitting 7 m E [find][call][name]
   2. Luna ♥10/10 sitting 5.7 km NW (2 h ago) [find][call][name]
   3. ☠ Parrot died 5 min ago 12 m N [forget]
