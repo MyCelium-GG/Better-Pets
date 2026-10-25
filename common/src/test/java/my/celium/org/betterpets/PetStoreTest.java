@@ -71,6 +71,11 @@ class PetStoreTest {
         PetStore store = new PetStore();
         store.load(dir);
         assertTrue(store.pets(UUID.randomUUID()).isEmpty());
+
+        // The next save must not destroy the old file: it is kept aside.
+        store.getOrCreate(UUID.randomUUID(), UUID.randomUUID(), "minecraft:wolf");
+        store.saveIfDirty();
+        assertEquals("{ not json", Files.readString(dir.resolve(PetStore.FILE_NAME + ".broken")));
     }
 
     @Test

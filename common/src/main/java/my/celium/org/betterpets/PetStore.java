@@ -1,39 +1,27 @@
 package my.celium.org.betterpets;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
-
-import my.celium.org.logging.MycelLog;
+import my.celium.org.data.MycelDataFile;
 
 /**
  * Every known pet per owner, saved per world as
  * {@code <world>/data/betterpets.json}. The file is small (a few hundred
  * bytes per pet) and rewritten wholesale, atomically, when something
- * changed. No Minecraft classes - only Gson and files - so it is fully
- * unit-testable.
+ * changed. A broken file is kept aside by {@link MycelDataFile} instead of
+ * being overwritten.
  */
 public final class PetStore {
     static final String FILE_NAME = "betterpets.json";
 
-    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-
     /** owner UUID -> (pet UUID -> record), both in first-seen order. */
     private final Map<UUID, Map<UUID, PetRecord>> owners = new LinkedHashMap<>();
-    private Path file;
+    private MycelDataFile file;
     private boolean dirty;
 
     private static final class Root {
@@ -45,29 +33,23 @@ public final class PetStore {
     public synchronized void load(Path dir) {
         owners.clear();
         dirty = false;
-        file = dir == null ? null : dir.resolve(FILE_NAME);
-        if (file == null || !Files.isRegularFile(file)) {
+        file = dir == null ? null : MycelDataFile.at(BetterPetsMod.META, dir.resolve(FILE_NAME));
+        if (file == null) {
             return;
         }
-        try (Reader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
-            Root root = GSON.fromJson(reader, new TypeToken<Root>() {
-            }.getType());
-            if (root == null || root.owners == null) {
-                return;
+        Root root = file.read(Root.class, Root::new);
+        if (root.owners == null) {
+            return;
+        }
+        for (Map.Entry<UUID, List<PetRecord>> entry : root.owners.entrySet()) {
+            if (entry.getKey() == null || entry.getValue() == null) {
+                continue;
             }
-            for (Map.Entry<UUID, List<PetRecord>> entry : root.owners.entrySet()) {
-                if (entry.getKey() == null || entry.getValue() == null) {
-                    continue;
-                }
-                for (PetRecord pet : entry.getValue()) {
-                    if (pet != null && pet.id != null) {
-                        owners.computeIfAbsent(entry.getKey(), k -> new LinkedHashMap<>()).put(pet.id, pet);
-                    }
+            for (PetRecord pet : entry.getValue()) {
+                if (pet != null && pet.id != null) {
+                    owners.computeIfAbsent(entry.getKey(), k -> new LinkedHashMap<>()).put(pet.id, pet);
                 }
             }
-        } catch (Exception e) {
-            MycelLog.warnMod(BetterPetsMod.ID, "Could not read {}, starting fresh: {}", file, e.toString());
-            owners.clear();
         }
     }
 
@@ -82,16 +64,8 @@ public final class PetStore {
                 root.owners.put(entry.getKey(), new ArrayList<>(entry.getValue().values()));
             }
         }
-        try {
-            Files.createDirectories(file.getParent());
-            Path temp = file.resolveSibling(FILE_NAME + ".tmp");
-            try (Writer writer = Files.newBufferedWriter(temp, StandardCharsets.UTF_8)) {
-                GSON.toJson(root, writer);
-            }
-            Files.move(temp, file, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        if (file.write(root)) {
             dirty = false;
-        } catch (IOException e) {
-            MycelLog.warnMod(BetterPetsMod.ID, "Could not save {}: {}", file, e.toString());
         }
     }
 
