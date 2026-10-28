@@ -26,7 +26,7 @@ import net.minecraft.world.entity.player.Player;
 public final class BetterPetsMod {
     public static final String ID = "betterpets";
 
-    public static final ModMetadata META = ModMetadata.builder(ID, "Better Pets", "1.0.4")
+    public static final ModMetadata META = ModMetadata.builder(ID, "Better Pets", "1.1.0")
             .author("MyCelium")
             .website("https://www.curseforge.com/minecraft/mc-mods/better-pets")
             .updateUrl("https://wiki.mycelium-gg.org/updates/betterpets.json")
