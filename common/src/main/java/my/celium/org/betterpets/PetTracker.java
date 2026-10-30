@@ -60,6 +60,9 @@ public final class PetTracker {
     public static void onServerStarted(MinecraftServer server) {
         LIVE.clear();
         FINDS.clear();
+        PetGui.clearPending();
+        PetMenu.clear();
+        PetPanel.clear();
         ticks = 0;
         STORE.load(server.getWorldPath(LevelResource.ROOT).resolve("data"));
     }
@@ -69,13 +72,18 @@ public final class PetTracker {
         STORE.clear();
         LIVE.clear();
         FINDS.clear();
+        PetGui.clearPending();
+        PetMenu.clear();
+        PetPanel.clear();
     }
 
     public static void tick(MinecraftServer server) {
         ticks++;
+        PetPanel.tick(server);
         watchLive(server);
         if (ticks % SCAN_INTERVAL == 0) {
             scan(server);
+            PetGui.refreshOpen(server.getPlayerList().getPlayers());
         }
         if (ticks % COMPASS_INTERVAL == 0) {
             tickFinds(server);
@@ -98,6 +106,13 @@ public final class PetTracker {
     public static Entity loaded(UUID pet) {
         Entity entity = LIVE.get(pet);
         return entity == null || entity.isRemoved() ? null : entity;
+    }
+
+    /** The up-to-date record of a loaded pet, even one tamed since the last scan. */
+    static PetRecord track(UUID owner, Entity entity) {
+        LIVE.put(entity.getUUID(), entity);
+        update(owner, entity);
+        return record(owner, entity.getUUID());
     }
 
     private static void scan(MinecraftServer server) {
@@ -181,7 +196,7 @@ public final class PetTracker {
         }
     }
 
-    private static PetRecord record(UUID owner, UUID pet) {
+    static PetRecord record(UUID owner, UUID pet) {
         for (PetRecord record : STORE.pets(owner)) {
             if (record.id.equals(pet)) {
                 return record;

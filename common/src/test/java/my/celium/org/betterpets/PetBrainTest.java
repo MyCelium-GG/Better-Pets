@@ -1,5 +1,6 @@
 package my.celium.org.betterpets;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -14,6 +15,57 @@ class PetBrainTest {
         PetRecord pet = new PetRecord(UUID.randomUUID(), "minecraft:wolf");
         pet.name = name;
         return pet;
+    }
+
+    @Test
+    void resolvesByUuid() {
+        PetRecord rex = pet("Rex");
+        PetRecord twin = pet("Rex");
+        assertEquals(List.of(twin), PetBrain.resolve(List.of(rex, twin), twin.id.toString()));
+    }
+
+    @Test
+    void healthBarShowsAnyHealthLeft() {
+        assertEquals(0, PetBrain.healthSlots(0, 20, 9));
+        assertEquals(1, PetBrain.healthSlots(0.5f, 20, 9));
+        assertEquals(5, PetBrain.healthSlots(10, 20, 9));
+        assertEquals(9, PetBrain.healthSlots(20, 20, 9));
+        assertEquals(9, PetBrain.healthSlots(25, 20, 9));
+        assertEquals(0, PetBrain.healthSlots(5, 0, 9));
+    }
+
+    @Test
+    void buttonsAreMirroredAroundTheMiddle() {
+        assertArrayEquals(new int[] {4}, PetBrain.centered(1));
+        assertArrayEquals(new int[] {3, 5}, PetBrain.centered(2));
+        assertArrayEquals(new int[] {3, 4, 5}, PetBrain.centered(3));
+        assertArrayEquals(new int[] {1, 2, 3, 5, 6, 7}, PetBrain.centered(6));
+        assertArrayEquals(new int[] {1, 2, 3, 4, 5, 6, 7}, PetBrain.centered(7));
+        assertArrayEquals(new int[] {0, 1, 2, 3, 5, 6, 7, 8}, PetBrain.centered(8));
+    }
+
+    @Test
+    void gridSizes() {
+        assertEquals(2, PetBrain.gridRows(0));
+        assertEquals(2, PetBrain.gridRows(9));
+        assertEquals(3, PetBrain.gridRows(10));
+        assertEquals(6, PetBrain.gridRows(45));
+        assertEquals(6, PetBrain.gridRows(100));
+        assertEquals(1, PetBrain.pages(0, 45));
+        assertEquals(1, PetBrain.pages(45, 45));
+        assertEquals(2, PetBrain.pages(46, 45));
+    }
+
+    @Test
+    void horseStatsReadLikeTheWiki() {
+        assertEquals("9.5 blocks/s", PetBrain.horseSpeed(0.225));
+        assertEquals("5.3 blocks", PetBrain.horseJump(1.0));
+    }
+
+    @Test
+    void dialogEscapesAreUndone() {
+        assertEquals("Bob's \\\"pet\"", PetBrain.unescapeDialog("Bob\\'s \\\\\\\"pet\\\""));
+        assertEquals("<#ff55aa>Rex &b", PetBrain.unescapeDialog("<#ff55aa>Rex &b"));
     }
 
     @Test

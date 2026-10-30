@@ -25,6 +25,7 @@ import net.minecraft.server.level.ServerPlayer;
  *
  * <ul>
  *   <li>{@code /pets} - every pet you own, where it is and what it is doing;</li>
+ *   <li>{@code /pets menu [pet]} - the chest screen, all pets or one;</li>
  *   <li>{@code /pets find <pet>} - glow plus an action-bar compass to it;</li>
  *   <li>{@code /pets call <pet>} - teleports a loaded pet to you;</li>
  *   <li>{@code /pets name <pet> <name>} - renames it, no name tag needed;</li>
@@ -61,6 +62,8 @@ public final class PetsCommand {
         dispatcher.register(Commands.literal("pets")
                 .executes(PetsCommand::list)
                 .then(Commands.literal("list").executes(PetsCommand::list))
+                .then(Commands.literal("menu").executes(PetsCommand::menu)
+                        .then(pet().executes(PetsCommand::menuOfPet)))
                 .then(Commands.literal("find").then(pet().executes(PetsCommand::find)))
                 .then(Commands.literal("call").then(pet().executes(PetsCommand::call)))
                 .then(Commands.literal("name").then(pet()
@@ -147,6 +150,9 @@ public final class PetsCommand {
         }
 
         List<Component> buttons = new java.util.ArrayList<>();
+        if (BetterPetsMod.petMenu.get()) {
+            buttons.add(PetText.button("menu", "/pets menu " + pet.id, "Open its menu"));
+        }
         buttons.add(PetText.button("find", "/pets find " + arg, "Make it glow and point the way"));
         if (BetterPetsMod.allowCall.get()) {
             buttons.add(PetText.button("call", "/pets call " + arg, "Teleport it to you"));
@@ -161,25 +167,64 @@ public final class PetsCommand {
 
     /** "12 m NW", or "in the nether"; hover shows the coordinates, click copies them. */
     private static MutableComponent place(ServerPlayer player, PetRecord pet) {
-        String text;
+        return PetText.place(placeText(player, pet), pet);
+    }
+
+    static String placeText(ServerPlayer player, PetRecord pet) {
         if (player.level().dimension().identifier().toString().equals(pet.dimension)) {
             double dx = pet.x - player.getX();
             double dz = pet.z - player.getZ();
-            text = PetBrain.distance(Math.sqrt(dx * dx + dz * dz)) + " " + PetBrain.compass(dx, dz);
-        } else {
-            text = "in the " + PetBrain.dimensionName(pet.dimension);
+            return PetBrain.distance(Math.sqrt(dx * dx + dz * dz)) + " " + PetBrain.compass(dx, dz);
         }
-        return PetText.place(text, pet);
+        return "in the " + PetBrain.dimensionName(pet.dimension);
     }
 
     // ---------------------------------------------------------------- actions
 
-    private static int find(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+    private static int menu(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         ServerPlayer player = context.getSource().getPlayerOrException();
+        if (!menuEnabled(player)) {
+            return 0;
+        }
+        if (PetTracker.STORE.pets(player.getUUID()).isEmpty()) {
+            player.sendSystemMessage(PetText.info("No pets yet. Tame a wolf, cat, parrot or horse and it shows up here."));
+            return 0;
+        }
+        PetPanel.openList(player);
+        return 1;
+    }
+
+    private static int menuOfPet(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        ServerPlayer player = context.getSource().getPlayerOrException();
+        if (!menuEnabled(player)) {
+            return 0;
+        }
         PetRecord pet = resolve(player, StringArgumentType.getString(context, "pet"));
         if (pet == null) {
             return 0;
         }
+        PetPanel.open(player, pet);
+        return 1;
+    }
+
+    private static boolean menuEnabled(ServerPlayer player) {
+        if (!enabled(player)) {
+            return false;
+        }
+        if (!BetterPetsMod.petMenu.get()) {
+            player.sendSystemMessage(PetText.fail("The pet menu is turned off on this server. /pets still works."));
+            return false;
+        }
+        return true;
+    }
+
+    private static int find(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        ServerPlayer player = context.getSource().getPlayerOrException();
+        PetRecord pet = resolve(player, StringArgumentType.getString(context, "pet"));
+        return pet == null ? 0 : find(player, pet);
+    }
+
+    static int find(ServerPlayer player, PetRecord pet) {
         if (pet.dead) {
             player.sendSystemMessage(PetText.info(TextUtil.hex("☠ ", PetText.DEAD), PetText.name(pet),
                     " died at ", PetText.coords(pet.x, pet.y, pet.z),
@@ -203,9 +248,12 @@ public final class PetsCommand {
             player.sendSystemMessage(PetText.fail("Calling pets is turned off on this server."));
             return 0;
         }
-        String query = StringArgumentType.getString(context, "pet");
-        PetRecord pet = resolve(player, query);
-        if (pet == null || isDead(player, pet)) {
+        PetRecord pet = resolve(player, StringArgumentType.getString(context, "pet"));
+        return pet == null ? 0 : call(player, pet);
+    }
+
+    static int call(ServerPlayer player, PetRecord pet) {
+        if (isDead(player, pet)) {
             return 0;
         }
         long now = System.currentTimeMillis();
@@ -216,7 +264,7 @@ public final class PetsCommand {
                     PetText.value(((cooldown - (now - last)) / 1000 + 1) + "s"), "."));
             return 0;
         }
-        Component error = PetTracker.call(player, pet, PetBrain.commandArgument(query));
+        Component error = PetTracker.call(player, pet, argument(player, pet));
         if (error != null) {
             player.sendSystemMessage(PetText.fail(error));
             return 0;
@@ -228,6 +276,7 @@ public final class PetsCommand {
 
     private static int name(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         ServerPlayer player = context.getSource().getPlayerOrException();
+        boolean fromDialog = PetMenu.fromDialog(player);
         if (!BetterPetsMod.allowRename.get()) {
             player.sendSystemMessage(PetText.fail("Renaming is turned off on this server. A name tag still works."));
             return 0;
@@ -236,9 +285,24 @@ public final class PetsCommand {
         if (pet == null || isDead(player, pet)) {
             return 0;
         }
-        String typed = PetBrain.cleanName(StringArgumentType.getString(context, "name"));
+        String raw = StringArgumentType.getString(context, "name");
+        int result = rename(player, pet, fromDialog ? PetBrain.unescapeDialog(raw) : raw);
+        if (fromDialog) {
+            PetMenu.open(player, pet);
+        }
+        return result;
+    }
+
+    /** The name to store for what a player typed, or {@code null} when it is not a usable name. */
+    static String validName(String raw) {
+        String typed = PetBrain.cleanName(raw);
         String plain = typed == null ? "" : PetNameFormat.plain(typed).strip();
-        if (plain.isEmpty() || plain.length() > PetBrain.MAX_NAME_LENGTH) {
+        return plain.isEmpty() || plain.length() > PetBrain.MAX_NAME_LENGTH ? null : typed;
+    }
+
+    private static int rename(ServerPlayer player, PetRecord pet, String raw) {
+        String typed = validName(raw);
+        if (typed == null) {
             player.sendSystemMessage(PetText.fail("A name needs 1 to ", PetText.value(String.valueOf(PetBrain.MAX_NAME_LENGTH)),
                     " letters (colors don't count)."));
             return 0;
@@ -261,7 +325,11 @@ public final class PetsCommand {
         }
         PetRecord pet = resolve(player, StringArgumentType.getString(context, "pet"));
         ServerPlayer target = EntityArgument.getPlayer(context, "player");
-        if (pet == null || isDead(player, pet)) {
+        return pet == null ? 0 : give(player, pet, target);
+    }
+
+    static int give(ServerPlayer player, PetRecord pet, ServerPlayer target) {
+        if (isDead(player, pet)) {
             return 0;
         }
         if (target == player) {
@@ -283,9 +351,10 @@ public final class PetsCommand {
     private static int forget(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         ServerPlayer player = context.getSource().getPlayerOrException();
         PetRecord pet = resolve(player, StringArgumentType.getString(context, "pet"));
-        if (pet == null) {
-            return 0;
-        }
+        return pet == null ? 0 : forget(player, pet);
+    }
+
+    static int forget(ServerPlayer player, PetRecord pet) {
         if (!pet.dead && PetTracker.loaded(pet.id) != null) {
             player.sendSystemMessage(PetText.fail(PetText.name(pet), " is right here and would be back on the list in a second."));
             return 0;

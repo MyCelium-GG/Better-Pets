@@ -6,7 +6,11 @@ on-screen arrow, call it to you, rename it (colors and gradients
 included), give it to a friend.
 
 - Your own hits don't hurt your pets; leads on your pets never snap
-- Death alert with coordinates; server side, works with vanilla clients
+- Shift-right-click a pet for a full menu: live 3D view, health, stats, rename,
+  click-to-feed and every action
+- Death alert with coordinates
+- Install on the server; with the mod on your client too you get the custom menu,
+  vanilla clients get a chest menu with the same buttons
 
 Requires **Mycel**. Needs Forge, Minecraft 26.3, 26.2 or 26.1 (26.1-26.1.2), Java 25.
 MIT license.

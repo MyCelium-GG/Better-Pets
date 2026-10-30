@@ -6,8 +6,9 @@ Owning a dog, cat, parrot or horse, done right. `/pets` lists every pet you
 own and where it is - even in unloaded chunks. Find one with a glow and an
 on-screen arrow, call it to you, rename it without a name tag, give it to a
 friend. Your own sword no longer hurts your pets, a lead on your pet never
-snaps, and when a pet dies you get the exact spot. Server side: players
-need nothing installed.
+snaps, and when a pet dies you get the exact spot. Shift-right-click a pet
+for a full menu. Runs on the server: with the mod on your client too you get
+the custom screen, without it a chest menu with the same buttons.
 
 Built on [Mycel](https://github.com/MyCelium-GG/MyCel-Lib) (`my.celium.org`), the shared
 core for the MyCelium ecosystem: configuration, platform abstraction and
@@ -18,7 +19,7 @@ diagnostics are reused.
 | Mod id | `betterpets` |
 | Minecraft | **26.3**, **26.2**, **26.1** (26.1-26.1.2) · Java **25** |
 | Loaders | Fabric, Forge, NeoForge |
-| Side | Server (works in singleplayer and with vanilla clients) |
+| Side | Server required; client optional, for the custom menu (vanilla clients get a chest menu) |
 
 ## Behavior
 
@@ -37,6 +38,15 @@ horses, donkeys, mules, llamas, camels, nautiluses and modded tamables.
   Hover a name for the species and health, hover the distance for the
   coordinates, click it to copy them. The buttons run the commands below.
   Pets in unloaded chunks keep their last known spot ("2 h ago").
+- **The pet menu**: shift-right-click your pet with anything but an item it
+  reacts to (food, lead, name tag, shears, dye, armor), or use `/pets menu`
+  or the `[menu]` button in `/pets`. Your pets are down the side, the selected
+  one stands in the middle and watches your mouse. Rename it in place (colors
+  work), see its health, where it is and, for horses, speed and jump height.
+  Click a food you carry to feed it. Buttons: sit/stand, gear (horses, llamas,
+  camels, nautiluses: this replaces their sneak-click inventory), find, call,
+  give, forget. Feeding, sitting and gear work within 8 blocks. Parrots eat
+  their taming seeds here, and never a cookie.
 - **`/pets find <pet>`** makes the pet glow for 30 s and shows
   `Rex ↑→ 23 m ▲4` above the hotbar: the arrow is relative to where you
   look, the triangle shows the height difference. It stops when you are
@@ -65,6 +75,7 @@ The pet list is saved per world in `<world>/data/betterpets.json`.
 | Key | Default | Meaning |
 |---|---|---|
 | `enabled` | `true` | Master switch (also toggleable live via `Mycel.setEnabled`). |
+| `petMenu` | `true` | Shift-right-clicking your pet and `/pets menu` open its menu. |
 | `protectFromOwner` | `true` | Owners cannot hurt their own pets unless sneaking. |
 | `strongLeads` | `true` | Pets on their owner's lead are pulled along instead of snapping off. |
 | `deathAlerts` | `true` | Tell the owner where a pet died. |
@@ -88,4 +99,4 @@ JDK 25, then:
 
 Mycel itself comes from [JitPack](https://jitpack.io/#MyCelium-GG/MyCel-Lib)
 as one universal jar for all loaders
-(`com.github.MyCelium-GG:MyCel-Lib:1.4.0`). No local setup needed.
+(`com.github.MyCelium-GG:MyCel-Lib`). No local setup needed.

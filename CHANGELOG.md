@@ -6,6 +6,25 @@ Better Pets is versioned semantically (`MAJOR.MINOR.PATCH`).
 It runs on Minecraft 26.3, 26.2 and 26.1 (Fabric + Forge + NeoForge, Java 25) and requires
 [Mycel](https://github.com/MyCelium-GG/MyCel-Lib) (`my.celium.org`).
 
+## [Unreleased]
+
+### Added
+
+- Pet menu: shift-right-click your pet, or `/pets menu [pet]`, or `[menu]` in
+  `/pets`. A custom screen with all your pets, a live view of the selected one,
+  rename box, health bar, stats (horse speed and jump too) and click-to-feed
+  with the food you carry, plus sit/stand, gear, find, call, give and forget.
+- Without the mod on the client, the same menu opens as a chest screen, so
+  vanilla clients keep working.
+- Config: `petMenu`.
+- `/pets` commands accept a pet's UUID.
+
+### Changed
+
+- Sneak-right-clicking your own horse, llama, camel or nautilus opens the pet
+  menu instead of its inventory; the menu's Gear button opens the inventory.
+  Turn this off with `petMenu`.
+
 ## [1.1.0] - 2026-10-28
 
 ### Added

@@ -18,7 +18,8 @@ import net.minecraftforge.fml.loading.FMLEnvironment;
 
 /**
  * Forge entrypoint: forwards the server tick, commands and incoming damage to
- * the common code; on clients also offers the Mycel config screen.
+ * the common code; on clients also offers the Mycel config screen. Forge has no
+ * working event for clicking an entity, see {@link my.celium.org.betterpets.forge.mixin.PlayerMixin}.
  */
 @Mod(BetterPetsMod.ID)
 public final class BetterPetsForge {

@@ -88,6 +88,7 @@ public final class PetStore {
         PetRecord record = pets.get(pet);
         if (record == null) {
             record = new PetRecord(pet, type);
+            record.firstSeen = System.currentTimeMillis();
             pets.put(pet, record);
             dirty = true;
         }

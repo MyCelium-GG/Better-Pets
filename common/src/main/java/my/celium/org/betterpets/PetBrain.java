@@ -92,8 +92,9 @@ public final class PetBrain {
     }
 
     /**
-     * Finds the pet a player means. {@code "#3"} or {@code "3"} picks the third
-     * pet of the list; otherwise an exact (case-insensitive) name wins, then a
+     * Finds the pet a player means. Its UUID (what the menu's buttons send)
+     * always works; {@code "#3"} or {@code "3"} picks the third pet of the
+     * list; otherwise an exact (case-insensitive) name wins, then a
      * unique name prefix. Returns every match so the caller can report
      * ambiguity; an empty list means nothing matched.
      */
@@ -103,6 +104,12 @@ public final class PetBrain {
             return result;
         }
         String q = query.trim();
+        for (PetRecord pet : pets) {
+            if (pet.id != null && pet.id.toString().equalsIgnoreCase(q)) {
+                result.add(pet);
+                return result;
+            }
+        }
         String digits = q.startsWith("#") ? q.substring(1) : q;
         if (digits.matches("\\d{1,4}")) {
             int index = Integer.parseInt(digits) - 1;
@@ -157,6 +164,52 @@ public final class PetBrain {
     /** Health as {@code "14/20"} with halves kept: {@code "7.5/20"}. */
     public static String health(float health, float max) {
         return number(health) + "/" + number(max);
+    }
+
+    /** How many of {@code slots} a health bar fills: any health left shows at least one. */
+    public static int healthSlots(float health, float max, int slots) {
+        if (health <= 0 || max <= 0) {
+            return 0;
+        }
+        return Math.min(slots, (int) Math.ceil(health / max * slots));
+    }
+
+    /** Columns of a nine-wide row for {@code count} buttons, mirrored around the middle. */
+    public static int[] centered(int count) {
+        int[] columns = new int[count];
+        int first = 4 - count / 2;
+        for (int i = 0; i < count; i++) {
+            // An even count leaves the middle column free so both sides match.
+            columns[i] = first + i + (count % 2 == 0 && i >= count / 2 ? 1 : 0);
+        }
+        return columns;
+    }
+
+    /** Rows of a chest screen with a grid of {@code entries} above one row of buttons. */
+    public static int gridRows(int entries) {
+        return Math.clamp((entries + 8) / 9 + 1, 2, 6);
+    }
+
+    /** Pages needed for {@code entries}; an empty grid still has one. */
+    public static int pages(int entries, int perPage) {
+        return Math.max(1, (entries + perPage - 1) / perPage);
+    }
+
+    /** A horse's speed attribute as players know it: {@code "10.5 blocks/s"}. */
+    public static String horseSpeed(double attribute) {
+        return String.format(Locale.ROOT, "%.1f blocks/s", attribute * 42.16);
+    }
+
+    /** A horse's jump attribute as the height it clears: {@code "3.4 blocks"} (the wiki's fitted curve). */
+    public static String horseJump(double attribute) {
+        double height = -0.1817584952 * attribute * attribute * attribute + 3.689713992 * attribute * attribute
+                + 2.128599134 * attribute - 0.343930367;
+        return String.format(Locale.ROOT, "%.1f blocks", height);
+    }
+
+    /** Undoes the backslashes a dialog's text box puts before quotes and backslashes. */
+    public static String unescapeDialog(String text) {
+        return text.replaceAll("\\\\(.)", "$1");
     }
 
     private static String number(float value) {

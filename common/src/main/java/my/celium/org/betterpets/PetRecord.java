@@ -24,6 +24,8 @@ public final class PetRecord {
     public float maxHealth;
     public boolean sitting;
     public boolean leashed;
+    /** Wall-clock millis when the pet first showed up, 0 for pets from before this was kept. */
+    public long firstSeen;
     /** Wall-clock millis when the pet was last seen loaded. */
     public long lastSeen;
     /** Whether the pet is currently in a loaded chunk (not persisted meaningfully). */
