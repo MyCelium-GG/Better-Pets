@@ -6,7 +6,7 @@ Better Pets is versioned semantically (`MAJOR.MINOR.PATCH`).
 It runs on Minecraft 26.3, 26.2 and 26.1 (Fabric + Forge + NeoForge, Java 25) and requires
 [Mycel](https://github.com/MyCelium-GG/MyCel-Lib) (`my.celium.org`).
 
-## [Unreleased]
+## [1.2.0] - 2026-10-31
 
 ### Added
 
