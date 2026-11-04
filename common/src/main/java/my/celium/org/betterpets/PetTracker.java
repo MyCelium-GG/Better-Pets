@@ -65,9 +65,11 @@ public final class PetTracker {
         PetPanel.clear();
         ticks = 0;
         STORE.load(server.getWorldPath(LevelResource.ROOT).resolve("data"));
+        PetStats.worldStarted();
     }
 
     public static void onServerStopped() {
+        PetStats.worldStopped();
         STORE.saveIfDirty();
         STORE.clear();
         LIVE.clear();
@@ -216,16 +218,29 @@ public final class PetTracker {
         pet.health = 0;
         pet.deathMessage = living.getCombatTracker().getDeathMessage().getString();
         STORE.markDirty();
+        PetStats.count("pet_death");
         ServerPlayer player = server.getPlayerList().getPlayer(owner);
         if (player != null && BetterPetsMod.deathAlerts.get()) {
-            String cause = pet.deathMessage;
-            player.sendSystemMessage(PetText.info(TextUtil.hex("\u2620 ", PetText.DEAD), PetText.name(pet),
-                    TextUtil.body(" died").withStyle(style -> style.withHoverEvent(
-                            new net.minecraft.network.chat.HoverEvent.ShowText(TextUtil.body(cause)))),
+            player.sendSystemMessage(PetText.fail(PetText.name(pet),
+                    TextUtil.hex(deathCause(pet), PetText.DEAD),
                     PetText.sep(), PetText.coords(pet.x, pet.y, pet.z),
-                    TextUtil.muted(" in the " + PetBrain.dimensionName(pet.dimension) + "  "),
-                    PetText.button("pets", "/pets", "Show your pets")));
+                    TextUtil.muted(" in the " + PetBrain.dimensionName(pet.dimension) + "   "),
+                    PetText.button("Show pets", "/pets", "Show your pets")));
         }
+    }
+
+    /**
+     * What happened, after the pet's name: {@code " was slain by Zombie"} from vanilla's death
+     * message ({@code "Rex was slain by Zombie"}), or {@code " died"} when it does not start
+     * with the name.
+     */
+    static String deathCause(PetRecord pet) {
+        String message = pet.deathMessage;
+        String plain = PetText.name(pet).getString();
+        if (message != null && !plain.isEmpty() && message.startsWith(plain + " ")) {
+            return message.substring(plain.length());
+        }
+        return " died";
     }
 
     /**
@@ -250,6 +265,7 @@ public final class PetTracker {
             entity.teleportTo(holder.getX(), holder.getY(), holder.getZ());
         }
         entity.resetFallDistance();
+        PetStats.count("lead_saved");
     }
 
     /**
@@ -262,8 +278,12 @@ public final class PetTracker {
         }
         UUID owner = ownerOf(target);
         Entity attacker = source.getEntity();
-        return owner != null && attacker instanceof Player player && player.getUUID().equals(owner)
+        boolean block = owner != null && attacker instanceof Player player && player.getUUID().equals(owner)
                 && !player.isShiftKeyDown();
+        if (block) {
+            PetStats.count("hit_blocked");
+        }
+        return block;
     }
 
     /**
@@ -304,8 +324,8 @@ public final class PetTracker {
             }
             if (sendCompass(player, pet)) {
                 it.remove();
-                player.sendSystemMessage(PetText.msg(TextUtil.hex("\u2714 ", PetText.GOOD), "Found ",
-                        PetText.name(pet), "!"), true);
+                player.sendSystemMessage(PetText.msg(TextUtil.hex("Found ", PetText.GOOD),
+                        PetText.name(pet), TextUtil.hex("!", PetText.GOOD)), true);
             }
         }
     }
@@ -349,7 +369,7 @@ public final class PetTracker {
         Entity entity = loaded(pet.id);
         if (entity == null) {
             return PetText.msg(PetText.name(pet), " is too far away to hear you. ",
-                    PetText.button("find", "/pets find " + argument, "Point the way to it"));
+                    PetText.button("Find", "/pets find " + argument, "Point the way to it"));
         }
         if (entity.level() != player.level()) {
             return PetText.msg(PetText.name(pet), " is in the ", PetText.value(PetBrain.dimensionName(pet.dimension)),
@@ -369,6 +389,7 @@ public final class PetTracker {
             entity.teleportTo(player.getX(), player.getY(), player.getZ());
         }
         entity.resetFallDistance();
+        PetStats.count("call");
         return null;
     }
 
@@ -387,6 +408,7 @@ public final class PetTracker {
         }
         STORE.remove(from.getUUID(), pet.id);
         update(target.getUUID(), entity);
+        PetStats.count("give");
         return null;
     }
 
@@ -406,6 +428,7 @@ public final class PetTracker {
         pet.name = PetNameFormat.plain(typed);
         pet.nameFormat = typed;
         STORE.markDirty();
+        PetStats.count("rename");
         return null;
     }
 }

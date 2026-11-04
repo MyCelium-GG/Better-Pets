@@ -114,6 +114,9 @@ final class PetCare {
         } else {
             return false;
         }
+        if (ate) {
+            PetStats.count("feed");
+        }
         if (ate && pet.level() instanceof ServerLevel level) {
             level.sendParticles(ParticleTypes.HEART, pet.getX(), pet.getY() + pet.getBbHeight() + 0.3, pet.getZ(),
                     3, 0.3, 0.2, 0.3, 0);
@@ -149,6 +152,7 @@ final class PetCare {
     }
 
     static void toggleSit(TamableAnimal pet) {
+        PetStats.count("sit");
         pet.setOrderedToSit(!pet.isOrderedToSit());
         pet.getNavigation().stop();
         pet.setTarget(null);
@@ -161,6 +165,7 @@ final class PetCare {
 
     static void openInventory(ServerPlayer player, Entity pet) {
         if (pet instanceof HasCustomInventoryScreen screen) {
+            PetStats.count("gear");
             screen.openCustomInventoryScreen(player);
         }
     }

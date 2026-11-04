@@ -10,9 +10,8 @@ import net.minecraft.world.entity.Entity;
 
 /**
  * Chat building blocks for Better Pets, on Mycel's shared message kit:
- * {@code Pets › ✔ Rex came running.} / {@code Pets › ✘ ...}. Plain text is
- * soft grey, pet names keep their own colors, values are wiki purple, buttons
- * wiki blue. Everything is vanilla components, so vanilla clients render it as is.
+ * {@code Pets » Rex came running.}, with rose text for errors. Plain text,
+ * values and buttons are off-white, pet names keep their own colors. Everything is vanilla components, so vanilla clients render it as is.
  */
 public final class PetText {
     static final ChatVoice VOICE = TextUtil.voice("Pets");
@@ -38,11 +37,11 @@ public final class PetText {
         return dim(" · ");
     }
 
-    /** Buttons with a space between each, so they read as separate targets. */
+    /** Buttons with two spaces between each, so they read as separate targets. */
     public static MutableComponent buttons(Component... buttons) {
         MutableComponent out = TextUtil.empty();
         for (int i = 0; i < buttons.length; i++) {
-            out.append(i == 0 ? TextUtil.empty() : TextUtil.body(" ")).append(buttons[i]);
+            out.append(i == 0 ? TextUtil.empty() : TextUtil.body("  ")).append(buttons[i]);
         }
         return out;
     }
@@ -52,17 +51,17 @@ public final class PetText {
         return TextUtil.msg(parts);
     }
 
-    /** {@code Pets › message}. */
+    /** Info line: {@code Pets » message}. */
     public static MutableComponent info(Object... parts) {
         return VOICE.note(parts);
     }
 
-    /** {@code Pets › ✔ message}. */
+    /** Success line: {@code Pets » message}. */
     public static MutableComponent ok(Object... parts) {
         return VOICE.ok(parts);
     }
 
-    /** {@code Pets › ✘ message}. */
+    /** Error line: rose text. */
     public static MutableComponent fail(Object... parts) {
         return VOICE.fail(parts);
     }
@@ -101,23 +100,19 @@ public final class PetText {
         return key != null ? Component.translatable(key) : Component.literal(pet.species());
     }
 
-    /** {@code [label]} that runs {@code command} when clicked. */
+    /** Underlined {@code label} that runs {@code command} when clicked, like Mycel's buttons. */
     public static MutableComponent button(String label, String command, String hover) {
-        return buttonText(label).withStyle(style -> style
-                .withClickEvent(new ClickEvent.RunCommand(command))
-                .withHoverEvent(new HoverEvent.ShowText(TextUtil.body(hover))));
+        return TextUtil.button(label, command, hover);
     }
 
-    /** {@code [label]} that puts {@code command} into the chat box for the player to finish. */
+    /** Underlined {@code label} that puts {@code command} into the chat box for the player to finish. */
     public static MutableComponent suggest(String label, String command, String hover) {
-        return buttonText(label).withStyle(style -> style
-                .withClickEvent(new ClickEvent.SuggestCommand(command))
-                .withHoverEvent(new HoverEvent.ShowText(TextUtil.body(hover))));
+        return TextUtil.suggest(label, command, hover);
     }
 
-    /** {@code [label]}: dim brackets, accent label. The parent's click covers all three parts. */
-    private static MutableComponent buttonText(String label) {
-        return TextUtil.empty().append(dim("[")).append(TextUtil.hex(label, BUTTON)).append(dim("]"));
+    /** Header opening a list: {@code Pets » Your pets - 5}. */
+    public static MutableComponent header(String title, String detail) {
+        return VOICE.header(title, detail);
     }
 
     /** {@code text} that shows the pet's coordinates on hover and copies them when clicked. */

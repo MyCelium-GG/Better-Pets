@@ -51,9 +51,11 @@ public final class PetPanel {
     /** Shows a pet in whichever menu this player's client can show. */
     static void open(ServerPlayer player, PetRecord pet) {
         if (!MycelNetwork.canSend(player, pets)) {
+            PetStats.count("menu_chest");
             PetMenu.open(player, pet);
             return;
         }
+        PetStats.count("menu_screen");
         OPEN.put(player.getUUID(), pet.id);
         if (!CONFIRMED.contains(player.getUUID())) {
             AWAITING.put(player.getUUID(), ticks + ANSWER_TICKS);
@@ -65,6 +67,7 @@ public final class PetPanel {
     static void openList(ServerPlayer player) {
         List<PetRecord> all = PetTracker.STORE.pets(player.getUUID());
         if (!MycelNetwork.canSend(player, pets)) {
+            PetStats.count("menu_chest");
             PetListMenu.open(player);
             return;
         }

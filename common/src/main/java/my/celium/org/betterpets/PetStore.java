@@ -123,4 +123,67 @@ public final class PetStore {
     synchronized boolean isDirty() {
         return dirty;
     }
+
+    // ---------------------------------------------------------------- stats
+
+    /** How many pets are known: living ones, or dead ones still on someone's list. */
+    public synchronized int count(boolean dead) {
+        int count = 0;
+        for (Map<UUID, PetRecord> pets : owners.values()) {
+            for (PetRecord pet : pets.values()) {
+                if (pet.dead == dead) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    /** Players with at least one living pet. */
+    public synchronized int ownerCount() {
+        int count = 0;
+        for (Map<UUID, PetRecord> pets : owners.values()) {
+            if (pets.values().stream().anyMatch(pet -> !pet.dead)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /** The most living pets one player has. */
+    public synchronized int mostPetsOneOwner() {
+        int most = 0;
+        for (Map<UUID, PetRecord> pets : owners.values()) {
+            most = Math.max(most, (int) pets.values().stream().filter(pet -> !pet.dead).count());
+        }
+        return most;
+    }
+
+    /** Living pets per species: {@code wolf} for vanilla, the full id for modded ones. */
+    public synchronized Map<String, Integer> species() {
+        Map<String, Integer> counts = new java.util.TreeMap<>();
+        for (Map<UUID, PetRecord> pets : owners.values()) {
+            for (PetRecord pet : pets.values()) {
+                if (!pet.dead) {
+                    String key = pet.type != null && !pet.type.startsWith("minecraft:") ? pet.type : pet.species();
+                    counts.merge(key, 1, Integer::sum);
+                }
+            }
+        }
+        return counts.isEmpty() ? null : counts;
+    }
+
+    /** Living pets with a custom name; with {@code colored}, only names with colors or styles. */
+    public synchronized int named(boolean colored) {
+        int count = 0;
+        for (Map<UUID, PetRecord> pets : owners.values()) {
+            for (PetRecord pet : pets.values()) {
+                if (!pet.dead && pet.customName() != null
+                        && (!colored || pet.nameFormat != null && !pet.nameFormat.equals(pet.customName()))) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
 }

@@ -29,10 +29,10 @@ horses, donkeys, mules, llamas, camels, nautiluses and modded tamables.
 - **`/pets`** lists them all, one line each:
 
   ```
-  Pets › Your pets (5)
-  1. Rex ♥40/40 sitting 7 m E [find][call][name]
-  2. Luna ♥10/10 sitting 5.7 km NW (2 h ago) [find][call][name]
-  3. ☠ Parrot died 5 min ago 12 m N [forget]
+  Pets » Your pets - 3
+  › 1 Rex ♥ 40/40 · 7 m E   Menu  Find  Call  Name
+  › 2 Luna ♥ 10/10 · 5.7 km NW (2 h ago)   Menu  Find  Call  Name
+  › 3 Parrot · died 5 min ago · 12 m N   Forget
   ```
 
   Hover a name for the species and health, hover the distance for the
@@ -40,7 +40,7 @@ horses, donkeys, mules, llamas, camels, nautiluses and modded tamables.
   Pets in unloaded chunks keep their last known spot ("2 h ago").
 - **The pet menu**: shift-right-click your pet with anything but an item it
   reacts to (food, lead, name tag, shears, dye, armor), or use `/pets menu`
-  or the `[menu]` button in `/pets`. Your pets are down the side, the selected
+  or the Menu button in `/pets`. Your pets are down the side, the selected
   one stands in the middle and watches your mouse. Rename it in place (colors
   work), see its health, where it is and, for horses, speed and jump height.
   Click a food you carry to feed it. Buttons: sit/stand, gear (horses, llamas,
@@ -63,12 +63,20 @@ horses, donkeys, mules, llamas, camels, nautiluses and modded tamables.
   own pets. Sneak while attacking if you really mean it.
 - **Strong leads**: a pet on your lead is pulled along when you sprint,
   fly or fall instead of the lead snapping at 12 blocks.
-- **Death alert**: `☠ Rex died at -129 66 -36 (overworld)`, click to copy.
+- **Death alert**: `Pets » Rex died · -129 66 -36 in the overworld`, click to copy.
 
 `<pet>` is a name (`Rex`, `"Sir Barks"`, a unique start like `bis`) or the
 number from `/pets`. Tab completion suggests both.
 
 The pet list is saved per world in `<world>/data/betterpets.json`.
+
+## Anonymous stats
+
+Better Pets sends anonymous stats (pet counts, species, which features get
+used, and errors in its own code) to its FastStats project through Mycel. It
+follows Mycel's choice exactly: the one-time screen in your own game,
+`shareStats` / `shareErrors` in `config/mycel.json` on servers. Details:
+https://wiki.mycelium-gg.org/privacy#better-pets-stats
 
 ## Configuration (`config/betterpets.json`)
 

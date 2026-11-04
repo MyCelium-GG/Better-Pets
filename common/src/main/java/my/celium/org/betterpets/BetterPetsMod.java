@@ -35,7 +35,7 @@ import net.minecraft.world.entity.player.Player;
 public final class BetterPetsMod {
     public static final String ID = "betterpets";
 
-    public static final ModMetadata META = ModMetadata.builder(ID, "Better Pets", "1.2.1")
+    public static final ModMetadata META = ModMetadata.builder(ID, "Better Pets", "1.2.2")
             .author("MyCelium")
             .website("https://www.curseforge.com/minecraft/mc-mods/better-pets")
             .updateUrl("https://wiki.mycelium-gg.org/updates/betterpets.json")
@@ -83,6 +83,7 @@ public final class BetterPetsMod {
         findSeconds = builder.intValue("findSeconds", 30, 5, 300,
                 "How long /pets find makes the pet glow and shows the compass.");
         config = builder.build();
+        PetStats.start();
 
         MycelEvents.onPlayerLeave(event -> {
             PetMenu.fromDialog(event.player());
