@@ -13,6 +13,8 @@
   <a href="https://github.com/MyCelium-GG/Better-Pets/blob/main/LICENSE"><img src="https://img.shields.io/github/license/MyCelium-GG/Better-Pets?style=flat-square&color=F2C14E" alt="License"></a>
 </p>
 
+<a href="https://www.curseforge.com/minecraft/mc-mods/mycel"><img src="https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/3d7178a5f964/docs/img/banners/mycel-required.svg" alt="Mycel is required: this mod needs the Mycel library to run. Install Mycel next to it, for the same Minecraft version and loader. Download it from CurseForge." width="100%"></a>
+
 ![About the mod](https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/1b971d994e75/docs/img/banners/about-the-mod.svg)
 
 <img src="https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/1b971d994e75/docs/img/banners/about.svg" alt="Better Pets Owning a dog, cat, parrot or horse, done right. /pets lists every pet you own and where it is - even in unloaded chunks. Find one with a glow and an on-screen arrow, call it to you, rename it without a name tag, give it to a friend. Your own sword no longer hurts your pets, a lead on your pet never snaps, and when a pet dies you get the exact spot. Shift-right-click a pet for a full menu. Runs on the server: with the mod on your client too you get the custom screen, without it a chest menu with the same buttons." width="100%">
