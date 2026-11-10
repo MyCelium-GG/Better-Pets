@@ -2,9 +2,14 @@
 
 Owning a dog, cat, parrot or horse, done right. `/pets` lists every pet you own and where it is, even in unloaded chunks. Find it with a glow and an on-screen arrow, call it to you, rename it, give it to a friend. Shift-right-click a pet for a full menu.
 
+**Winter update:** knit your dog or cat a scarf in any colour, watch your dogs curl up on the end of your bed at night, and see them come in from the snow all white and shake it off.
+
 ![The Better Pets menu: pet list, live 3D wolf, health bar, feed slots and action buttons](https://wiki.mycelium-gg.org/betterpets/img/menu.png)
 
-- Pet menu: live 3D view, health bar, stats, rename box, click-to-feed and every action below
+- Pet Scarf: craft it from 3 wool and a string, dye it, right-click your dog or cat
+- Dogs sleep on your bed with you, like cats do
+- Snowy coats in falling snow, shaken off under a roof
+- Christmas pet menu: your pets as tabs, the pet standing in the snow, hearts, food, scarf and every action below
 - `/pets`: all your pets with health, distance, direction and buttons
 - `/pets find`: the pet glows and an arrow above your hotbar points the way
 - `/pets call`: teleports a pet to you
@@ -20,7 +25,7 @@ Owning a dog, cat, parrot or horse, done right. `/pets` lists every pet you own 
 
 ## Install
 
-Install it on the server. Players who also have it on their client get the custom menu; everyone else gets a chest menu with the same buttons.
+Install it on the server and on every client.
 
 Requires [Mycel](https://www.curseforge.com/minecraft/mc-mods/mycel): install it alongside this mod. Minecraft 26.1, 26.2 and 26.3 on Fabric, Forge and NeoForge, Java 25. On Fabric you also need Fabric API.
 

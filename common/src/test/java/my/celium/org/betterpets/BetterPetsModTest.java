@@ -18,7 +18,7 @@ class BetterPetsModTest {
     @BeforeAll
     static void initOnce(@TempDir Path tempDir) {
         MycelTesting.useConfigDir(tempDir);
-        BetterPetsMod.init();
+        BetterPetsMod.init(false);
     }
 
     @Test
@@ -38,6 +38,9 @@ class BetterPetsModTest {
         assertTrue(BetterPetsMod.allowRename.get());
         assertTrue(BetterPetsMod.allowGive.get());
         assertEquals(30, BetterPetsMod.findSeconds.get());
+        assertTrue(BetterPetsMod.scarves.get());
+        assertTrue(BetterPetsMod.sleepOnBed.get());
+        assertTrue(BetterPetsMod.snowyCoats.get());
     }
 
     @Test

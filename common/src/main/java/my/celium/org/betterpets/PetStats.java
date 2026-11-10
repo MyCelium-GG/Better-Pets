@@ -61,15 +61,18 @@ public final class PetStats {
 
     private static String[] settingsOff() {
         List<String> off = new ArrayList<>();
-        Map<String, ConfigValue<Boolean>> switches = new TreeMap<>(Map.of(
-                "enabled", BetterPetsMod.enabled,
-                "petMenu", BetterPetsMod.petMenu,
-                "protectFromOwner", BetterPetsMod.protectFromOwner,
-                "strongLeads", BetterPetsMod.strongLeads,
-                "deathAlerts", BetterPetsMod.deathAlerts,
-                "allowCall", BetterPetsMod.allowCall,
-                "allowRename", BetterPetsMod.allowRename,
-                "allowGive", BetterPetsMod.allowGive));
+        Map<String, ConfigValue<Boolean>> switches = new TreeMap<>(Map.ofEntries(
+                Map.entry("enabled", BetterPetsMod.enabled),
+                Map.entry("petMenu", BetterPetsMod.petMenu),
+                Map.entry("protectFromOwner", BetterPetsMod.protectFromOwner),
+                Map.entry("strongLeads", BetterPetsMod.strongLeads),
+                Map.entry("deathAlerts", BetterPetsMod.deathAlerts),
+                Map.entry("allowCall", BetterPetsMod.allowCall),
+                Map.entry("allowRename", BetterPetsMod.allowRename),
+                Map.entry("allowGive", BetterPetsMod.allowGive),
+                Map.entry("scarves", BetterPetsMod.scarves),
+                Map.entry("sleepOnBed", BetterPetsMod.sleepOnBed),
+                Map.entry("snowyCoats", BetterPetsMod.snowyCoats)));
         switches.forEach((name, value) -> {
             if (!value.get()) {
                 off.add(name);

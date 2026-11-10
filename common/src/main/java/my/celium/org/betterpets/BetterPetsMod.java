@@ -12,6 +12,19 @@ import my.celium.org.event.ServerLifecycleEvent;
 import my.celium.org.metadata.ModMetadata;
 import my.celium.org.network.MycelNetwork;
 import my.celium.org.network.PacketDefinition;
+import my.celium.org.registry.DeferredEntry;
+import my.celium.org.registry.MycelRegistry;
+import my.celium.org.betterpets.client.ClientLooks;
+import my.celium.org.betterpets.net.PetLooksPacket;
+import my.celium.org.betterpets.winter.PetScarfItem;
+import my.celium.org.betterpets.winter.Scarves;
+import my.celium.org.betterpets.winter.Winter;
+import java.util.List;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -35,7 +48,7 @@ import net.minecraft.world.entity.player.Player;
 public final class BetterPetsMod {
     public static final String ID = "betterpets";
 
-    public static final ModMetadata META = ModMetadata.builder(ID, "Better Pets", "1.2.2")
+    public static final ModMetadata META = ModMetadata.builder(ID, "Better Pets", "1.3.0")
             .author("MyCelium")
             .website("https://www.curseforge.com/minecraft/mc-mods/better-pets")
             .updateUrl("https://wiki.mycelium-gg.org/updates/betterpets.json")
@@ -51,6 +64,10 @@ public final class BetterPetsMod {
     public static ConfigValue<Boolean> allowRename;
     public static ConfigValue<Boolean> allowGive;
     public static ConfigValue<Integer> findSeconds;
+    public static ConfigValue<Boolean> scarves;
+    public static ConfigValue<Boolean> sleepOnBed;
+    public static ConfigValue<Boolean> snowyCoats;
+    public static DeferredEntry<Item> petScarf;
     public static MycelConfig config;
 
     private BetterPetsMod() {
@@ -58,9 +75,29 @@ public final class BetterPetsMod {
 
     /** Called once from each loader's entrypoint. */
     public static void init() {
+        init(true);
+    }
+
+    /** {@code items = false} only for unit tests, which run without a game to register items into. */
+    static void init(boolean items) {
         Mycel.initialize();
         Mycel.registerMod(META);
 
+        if (items) {
+            registerItems();
+        }
+        initRest();
+    }
+
+    private static void registerItems() {
+        petScarf = MycelRegistry.items(META).registerWithKey("pet_scarf",
+                key -> new PetScarfItem(new Item.Properties().setId(key).stacksTo(16)
+                        .component(DataComponents.LORE, new ItemLore(List.of(
+                                Component.translatable("item.betterpets.pet_scarf.hint")
+                                        .withStyle(style -> style.withItalic(false)).withStyle(ChatFormatting.GRAY))))));
+    }
+
+    private static void initRest() {
         ConfigBuilder builder = Mycel.config(META);
         enabled = builder.booleanValue("enabled", true,
                 "Master switch for Better Pets.");
@@ -82,12 +119,19 @@ public final class BetterPetsMod {
                 "Allow /pets give to hand a pet to another player.");
         findSeconds = builder.intValue("findSeconds", 30, 5, 300,
                 "How long /pets find makes the pet glow and shows the compass.");
+        scarves = builder.booleanValue("scarves", true,
+                "Dogs and cats can wear a Pet Scarf: right-click your own pet with one.");
+        sleepOnBed = builder.booleanValue("sleepOnBed", true,
+                "When you go to bed, your dogs lie down on the end of it (dogs told to sit stay put).");
+        snowyCoats = builder.booleanValue("snowyCoats", true,
+                "Dogs and cats out in falling snow turn white, and shake it off under a roof.");
         config = builder.build();
         PetStats.start();
 
         MycelEvents.onPlayerLeave(event -> {
             PetMenu.fromDialog(event.player());
             PetPanel.forgetPlayer(event.player().getUUID());
+            Winter.forgetPlayer(event.player().getUUID());
         });
 
         // Optional both ways: without the mod on the client the chest menu takes over.
@@ -97,6 +141,9 @@ public final class BetterPetsMod {
                 (packet, context) -> PetPanel.handle(packet, context.sender()));
         MycelNetwork.register(META, PetPanel.pets);
         MycelNetwork.register(META, PetPanel.action);
+        Winter.looks = PacketDefinition.toClient(PetLooksPacket.TYPE, PetLooksPacket.CODEC,
+                (packet, context) -> ClientLooks.receive(packet));
+        MycelNetwork.register(META, Winter.looks);
 
         MycelEvents.onServerLifecycle(event -> {
             if (event.phase() == ServerLifecycleEvent.Phase.STARTED) {
@@ -134,6 +181,9 @@ public final class BetterPetsMod {
     /** Right-click-on-entity hook, both sides: {@code true} means the pet's menu took the click. */
     public static boolean onInteract(Player player, Entity target, boolean mainHand) {
         try {
+            if (Scarves.onInteract(player, target, mainHand)) {
+                return true;
+            }
             return PetMenu.onInteract(player, target, mainHand);
         } catch (RuntimeException e) {
             return false;

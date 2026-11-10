@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "betterpets:item/pet_scarf",
+    "tints": [
+      {
+        "type": "minecraft:dye",
+        "default": -5231066
+      }
+    ]
+  }
+}

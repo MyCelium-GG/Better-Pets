@@ -26,6 +26,7 @@ minecraft {
         register('client') {
             workingDir = layout.projectDirectory.dir('runs/client')
             args '--mixin.config', 'betterpets.forge.mixins.json'
+            args '--mixin.config', 'betterpets.mixins.json'
             // -PquickPlay=localhost:25565 joins that server right after start-up.
             if (project.hasProperty('quickPlay')) {
                 args '--quickPlayMultiplayer', project.property('quickPlay').toString()
@@ -35,6 +36,7 @@ minecraft {
             workingDir = layout.projectDirectory.dir('runs/server')
             args '--nogui'
             args '--mixin.config', 'betterpets.forge.mixins.json'
+            args '--mixin.config', 'betterpets.mixins.json'
         }
     }
 }
@@ -42,6 +44,6 @@ minecraft {
 // Dev runs get this config from --mixin.config above; real installs read it here.
 tasks.named('jar') {
     manifest {
-        attributes 'MixinConfigs': 'betterpets.forge.mixins.json'
+        attributes 'MixinConfigs': 'betterpets.forge.mixins.json,betterpets.mixins.json'
     }
 }

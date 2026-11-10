@@ -6,6 +6,21 @@ Better Pets is versioned semantically (`MAJOR.MINOR.PATCH`).
 It runs on Minecraft 26.3, 26.2 and 26.1 (Fabric + Forge + NeoForge, Java 25) and requires
 [Mycel](https://github.com/MyCelium-GG/MyCel-Lib) (`my.celium.org`).
 
+## [1.3.0] - 2026-11-10
+
+The winter update.
+
+### Added
+- Pet Scarf: craft it from 3 wool and a string, dye it any colour, then right-click your own dog or cat to put it on. It sits around the neck with an end hanging down, and moves with the pet. Take it off from the pet menu; it drops if the pet dies.
+- Dogs sleep on your bed: when you go to bed, your dogs come and lie down on the end of it, the rest on the floor next to it. Dogs you told to sit stay where they are.
+- Snowy coats: dogs and cats out in falling snow slowly turn white, shake it off with a puff of snow when they get under a roof, and wash it off in water.
+- Settings: `scarves`, `sleepOnBed`, `snowyCoats` (all on).
+
+### Changed
+- New pet menu, built from scratch as a winter night landscape: northern lights, a full moon, snowy hills and pine woods, a cabin with lit windows, a Christmas tree and falling snow. Your pets are tabs under a string of lights, the pet stands in the snow, and its hearts, whereabouts, scarf and food sit on a panel beside it. Click the name to rename it; scroll or use the arrow keys to switch pets.
+- The pet in the menu only watches your cursor while it is near the pet, so it no longer swings around while you use the buttons.
+- Better Pets is now needed on the client too (the Pet Scarf is a new item). Install it on the server and on every client.
+
 ## [1.2.2] - 2026-11-04
 
 ### Changed

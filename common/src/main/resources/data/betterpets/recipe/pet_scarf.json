@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "WSW",
+    " W "
+  ],
+  "key": {
+    "W": "#minecraft:wool",
+    "S": "minecraft:string"
+  },
+  "result": {
+    "id": "betterpets:pet_scarf",
+    "count": 1
+  }
+}

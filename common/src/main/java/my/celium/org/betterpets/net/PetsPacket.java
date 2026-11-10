@@ -50,10 +50,13 @@ public record PetsPacket(boolean open, UUID selected, List<Pet> pets, Details de
     public record Person(UUID id, String name) {
     }
 
-    /** The selected pet, in full. {@code entityId} is -1 when it is not loaded. */
+    /**
+     * The selected pet, in full. {@code entityId} is -1 when it is not loaded. {@code scarf} is
+     * the colour it wears (0xRRGGBB) or -1; {@code scarfFits} whether it could wear one.
+     */
     public record Details(int entityId, boolean near, boolean hungry, boolean canSit, boolean sitting,
             boolean hasInventory, String status, String where, String since, String death, String speed, String jump,
-            List<Food> foods) {
+            List<Food> foods, int scarf, boolean scarfFits) {
     }
 
     @Override
@@ -93,6 +96,8 @@ public record PetsPacket(boolean open, UUID selected, List<Pet> pets, Details de
             b.writeUtf(food.item);
             b.writeVarInt(food.count);
         });
+        buf.writeInt(d.scarf);
+        buf.writeBoolean(d.scarfFits);
         list(buf, p.players, (b, person) -> {
             b.writeUUID(person.id);
             b.writeUtf(person.name);
@@ -111,7 +116,8 @@ public record PetsPacket(boolean open, UUID selected, List<Pet> pets, Details de
                 b.readFloat(), b.readBoolean(), b.readBoolean(), b.readUtf()));
         Details details = new Details(buf.readVarInt(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean(),
                 buf.readBoolean(), buf.readBoolean(), buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readUtf(),
-                buf.readUtf(), buf.readUtf(), list(buf, b -> new Food(b.readVarInt(), b.readUtf(), b.readVarInt())));
+                buf.readUtf(), buf.readUtf(), list(buf, b -> new Food(b.readVarInt(), b.readUtf(), b.readVarInt())),
+                buf.readInt(), buf.readBoolean());
         List<Person> players = list(buf, b -> new Person(b.readUUID(), b.readUtf()));
         return new PetsPacket(open, selected, pets, details, players, buf.readUtf(), buf.readBoolean(),
                 buf.readBoolean(), buf.readBoolean(), buf.readBoolean());

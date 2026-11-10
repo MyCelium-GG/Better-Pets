@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_dye",
+  "dye": "#minecraft:dyes",
+  "group": "dyed_pet_scarf",
+  "result": {
+    "id": "betterpets:pet_scarf"
+  },
+  "target": "betterpets:pet_scarf"
+}

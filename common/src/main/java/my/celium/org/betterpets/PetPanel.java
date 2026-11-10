@@ -11,6 +11,7 @@ import java.util.UUID;
 
 import my.celium.org.betterpets.net.PetActionPacket;
 import my.celium.org.betterpets.net.PetsPacket;
+import my.celium.org.betterpets.winter.Scarves;
 import my.celium.org.network.MycelNetwork;
 import my.celium.org.network.PacketDefinition;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -217,6 +218,13 @@ public final class PetPanel {
             case GIVE -> {
                 return give(player, pet, packet.text());
             }
+            case SCARF_OFF -> {
+                if (!PetCare.isNear(player, entity)) {
+                    return Result.fail(name + " is too far away. Call it first.");
+                }
+                return Scarves.takeOff(player, entity) ? Result.ok(name + "'s scarf is back in your inventory.")
+                        : Result.NONE;
+            }
             case FORGET -> {
                 if (PetsCommand.forget(player, pet) > 0) {
                     return Result.ok(name + " was removed from your list.");
@@ -306,7 +314,8 @@ public final class PetPanel {
                 PetText.blockCoords(pet.x, pet.y, pet.z) + " in the " + PetBrain.dimensionName(pet.dimension),
                 pet.firstSeen > 0 ? PetBrain.ago(now - pet.firstSeen) : "",
                 pet.dead ? (pet.deathMessage == null ? "Died" : pet.deathMessage) + ", " + PetBrain.ago(now - pet.lastSeen) : "",
-                speed, jump, entity == null ? List.of() : foods(player, entity));
+                speed, jump, entity == null ? List.of() : foods(player, entity),
+                entity == null ? -1 : Scarves.color(entity), entity != null && Scarves.fits(entity));
     }
 
     private static List<PetsPacket.Food> foods(ServerPlayer player, Entity entity) {

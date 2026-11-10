@@ -1,10 +1,13 @@
 package my.celium.org.betterpets;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 
+import my.celium.org.betterpets.winter.Scarves;
+import my.celium.org.betterpets.winter.Winter;
 import my.celium.org.util.TextUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -63,6 +66,7 @@ public final class PetTracker {
         PetGui.clearPending();
         PetMenu.clear();
         PetPanel.clear();
+        Winter.clear();
         ticks = 0;
         STORE.load(server.getWorldPath(LevelResource.ROOT).resolve("data"));
         PetStats.worldStarted();
@@ -77,6 +81,7 @@ public final class PetTracker {
         PetGui.clearPending();
         PetMenu.clear();
         PetPanel.clear();
+        Winter.clear();
     }
 
     public static void tick(MinecraftServer server) {
@@ -93,6 +98,12 @@ public final class PetTracker {
         if (ticks % SAVE_INTERVAL == 0) {
             STORE.saveIfDirty();
         }
+        Winter.tick(server);
+    }
+
+    /** Every pet loaded right now (from the last scan, minus the dead and unloaded). */
+    public static Collection<Entity> livePets() {
+        return LIVE.values().stream().filter(entity -> !entity.isRemoved()).toList();
     }
 
     /** The owner UUID of a tamed pet, or {@code null} when {@code entity} is not someone's pet. */
@@ -208,6 +219,8 @@ public final class PetTracker {
     }
 
     private static void onDeath(MinecraftServer server, UUID owner, LivingEntity living) {
+        Scarves.dropOnDeath(living);
+        Winter.forget(living.getUUID());
         update(owner, living);
         PetRecord pet = record(owner, living.getUUID());
         if (pet == null) {

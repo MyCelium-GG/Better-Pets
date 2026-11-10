@@ -41,7 +41,8 @@ public record PetActionPacket(Action action, UUID pet, int slot, String text) im
         CALL,
         RENAME,
         GIVE,
-        FORGET
+        FORGET,
+        SCARF_OFF
     }
 
     public PetActionPacket(Action action, UUID pet) {

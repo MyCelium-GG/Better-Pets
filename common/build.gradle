@@ -5,6 +5,16 @@ plugins {
 
 description = rootProject.description
 
+repositories {
+    maven {
+        name = 'Fabric'
+        url = uri('https://maven.fabricmc.net')
+        content {
+            includeGroup('net.fabricmc')
+        }
+    }
+}
+
 neoForge {
     neoFormVersion = neo_form_version
     // Automatically enable AccessTransformers if the file exists
@@ -25,6 +35,8 @@ dependencies {
     // Mycel shared library (common API) via JitPack. `api` so loader modules
     // compiling the common sources see it too.
     api "${mycel_coordinates}"
+    // Annotations only; each loader brings its own Mixin at runtime.
+    compileOnly 'net.fabricmc:sponge-mixin:0.17.5+mixin.0.8.7'
     testImplementation "org.junit.jupiter:junit-jupiter:${rootProject.junit_version}"
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
