@@ -11,15 +11,20 @@ import my.celium.org.betterpets.net.PetsPacket;
 import my.celium.org.client.MycelScreens;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.gui.screens.inventory.PageButton;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.Entity;
@@ -30,45 +35,77 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.SpawnEggItem;
 
 /**
- * The pet menu: one square window filled with a winter night landscape (see {@link Festive}).
- * Your pets are tabs along the top under a string of lights; the selected pet stands in the snow
- * on the left and watches the cursor while it is near; its name, hearts, whereabouts, scarf and
- * food are on a see-through panel on the right; the buttons stand in the snow at the bottom. Click the name to rename. Scroll or use the arrow keys
- * to switch pets.
+ * The pet menu, as a pet book: an open book made from the game's own book page (drawn twice, the
+ * left one mirrored, so the stitching meets at the spine). Every pet has its own spread: the left
+ * page shows its name (click to rename), its kind and the pet itself, the right page its health,
+ * whereabouts, scarf and food in ink. The first spread is a table of contents with every pet.
+ * Turn pages with the arrows, the arrow keys or the mouse wheel; the actions are normal buttons
+ * under the book, like the buttons under a book and quill.
  *
  * <p>All state comes from the server in {@link PetsPacket}; every click goes back as a
- * {@link PetActionPacket}. The look is the menu's own ({@link Ui}), not Mycel's or vanilla's.
+ * {@link PetActionPacket}.
  */
 public final class PetScreen extends Screen {
-    private static final int HEADER_H = 38;
-    private static final int ACTION_H = 34;
-    private static final int TAB = 22;
-    private static final int TAB_GAP = 3;
+    private static final Identifier HEART_EMPTY = Identifier.withDefaultNamespace("hud/heart/container");
+    private static final Identifier HEART_FULL = Identifier.withDefaultNamespace("hud/heart/full");
+    private static final Identifier HEART_HALF = Identifier.withDefaultNamespace("hud/heart/half");
+    private static final Identifier SLOT = Identifier.withDefaultNamespace("container/slot");
+
+    /**
+     * One page of the vanilla book texture (256x256) without its cover strip on the stitched side:
+     * x 26 to 166, y 1 to 181. The two pages meet at the stitching and share one spine.
+     */
+    private static final int PAGE_U = 26;
+    private static final int PAGE_V = 1;
+    private static final int PAGE_W = 140;
+    private static final int SPINE_MARGIN = 11;
+    private static final int PAGE_H = 180;
+    private static final int BOOK_W = PAGE_W * 2;
+    private static final int MARGIN = 17;
+    private static final int BUTTON_H = 20;
+    private static final int BUTTON_GAP = 9;
+    private static final int SETTINGS_ROW = 11;
+    private static final int GEAR_W = 15;
+    private static final int GEAR_H = 10;
+    private static final int ROW = 12;
+    private static final int LABEL_W = 46;
     private static final int TILE = 18;
-    private static final int LINE = 11;
-    private static final int GAP = 6;
+    private static final int CONTENTS_ROW = 18;
+    private static final int CONTENTS_TOP = 34;
     private static final int KEY_ENTER = 257;
     private static final int KEY_ESCAPE = 256;
     private static final int KEY_LEFT = 263;
     private static final int KEY_RIGHT = 262;
     private static final long NOTICE_MS = 3500;
-    private static final float NAME_SCALE = 1.5f;
+
+    /** Ink colours, close to the written book's. */
+    private static final int INK = 0xFF2B2117;
+    private static final int FADED = 0xFF7D6B55;
+    private static final int RULE = 0x40553F28;
+    private static final int RED = 0xFFA3282A;
+    private static final int RED_HOT = 0xFFD2382F;
+    private static final int HOVER = 0x22553F28;
 
     private PetsPacket state;
     private EditBox nameBox;
-    private SnowButton mainButton;
-    private SnowButton findButton;
-    private SnowButton callButton;
-    private SnowButton giveButton;
-    private SnowButton cancelButton;
+    private Button mainButton;
+    private Button findButton;
+    private Button callButton;
+    private Button giveButton;
+    private Button cancelButton;
+    private Button doneButton;
+    private PageButton backPage;
+    private PageButton nextPage;
     private UUID shownPet;
-    private int firstTab;
+    /** The contents page shown, or -1 while a pet's spread is open. */
+    private int contentsPage = -1;
     private boolean renaming;
     private boolean giving;
     private UUID armedPlayer;
     private Runnable mainAction = () -> { };
     private String notice = "";
-    private boolean noticeOk;
+    private boolean settingsOpen;
+    private int settingsScroll;
     private long noticeAt;
 
     PetScreen(PetsPacket state) {
@@ -81,7 +118,6 @@ public final class PetScreen extends Screen {
         state = packet;
         if (!packet.notice().isEmpty()) {
             notice = packet.notice();
-            noticeOk = packet.noticeOk();
             noticeAt = System.currentTimeMillis();
         }
         if (nameBox != null) {
@@ -91,116 +127,110 @@ public final class PetScreen extends Screen {
 
     // ================================================================ layout
 
-    private int cardW() {
-        return Math.clamp(width - 16, 300, 352);
+    private int bookX() {
+        return (width - BOOK_W) / 2;
     }
 
-    private int cardH() {
-        return Math.clamp(height - 28, 196, 222);
+    private int bookY() {
+        return Math.max(GEAR_H + 2, (height - PAGE_H - BUTTON_GAP - BUTTON_H - 14) / 2 + 4);
     }
 
-    private int left() {
-        return (width - cardW()) / 2;
+    /** Text area of the left page; the stitching is on its right, at the spine. */
+    private int leftX0() {
+        return bookX() + MARGIN;
     }
 
-    private int top() {
-        return (height - cardH()) / 2;
+    private int leftX1() {
+        return bookX() + PAGE_W - SPINE_MARGIN;
     }
 
-    private int right() {
-        return left() + cardW();
+    private int rightX0() {
+        return bookX() + PAGE_W + SPINE_MARGIN;
     }
 
-    private int bottom() {
-        return top() + cardH();
+    private int rightX1() {
+        return bookX() + BOOK_W - MARGIN;
     }
 
-    private int previewW() {
-        return cardW() >= 340 ? 120 : 106;
+    private int pageTop() {
+        return bookY() + 15;
     }
 
-    private int previewX0() {
-        return left() + 10;
-    }
-
-    private int previewX1() {
-        return previewX0() + previewW();
-    }
-
-    private int bodyY0() {
-        return top() + HEADER_H + 8;
-    }
-
-    private int bodyY1() {
-        return bottom() - ACTION_H - 4;
-    }
-
-    private int infoX() {
-        return previewX1() + 12;
-    }
-
-    private int infoW() {
-        return right() - 12 - infoX();
+    private int arrowY() {
+        return bookY() + PAGE_H - 25;
     }
 
     private int nameY() {
-        return bodyY0() + 1;
+        return pageTop() + 2;
     }
 
     private int feedY() {
-        return bodyY1() - TILE;
+        return arrowY() - TILE - 6;
     }
 
     private int scarfY() {
         return feedY() - 15;
     }
 
-    private int maxTabs() {
-        return Math.max(1, (cardW() - 20 - 26) / (TAB + TAB_GAP));
+    private int buttonY() {
+        return bookY() + PAGE_H + BUTTON_GAP;
     }
 
-    private int tabX(int slot) {
-        return left() + 10 + slot * (TAB + TAB_GAP);
+    private int contentsPerPage() {
+        return (arrowY() - 4 - (bookY() + CONTENTS_TOP)) / CONTENTS_ROW;
     }
 
-    /** Below the string of lights. */
-    private int tabY() {
-        return top() + 11;
+    private int contentsPages() {
+        int perSpread = contentsPerPage() * 2;
+        return Math.max(1, (state.pets().size() + perSpread - 1) / perSpread);
     }
 
-    private int closeX() {
-        return right() - 22;
+    private int pageCount() {
+        return contentsPages() + state.pets().size();
+    }
+
+    private int currentPage() {
+        if (contentsPage >= 0) {
+            return contentsPage;
+        }
+        return contentsPages() + Math.max(0, state.pets().indexOf(selected()));
     }
 
     // ================================================================ widgets
 
     @Override
     protected void init() {
-        nameBox = new EditBox(font, infoX(), nameY() + 2, infoW(), 12, Component.literal("Name"));
+        nameBox = new EditBox(font, leftX0(), nameY(), leftX1() - leftX0(), 12, Component.literal("Name"));
         nameBox.setMaxLength(PetBrain.MAX_TYPED_LENGTH);
         nameBox.setBordered(false);
-        nameBox.setTextColor(Ui.TEXT);
+        nameBox.setTextColor(INK);
         nameBox.setHint(Component.literal("Give it a name"));
         addRenderableWidget(nameBox);
 
-        int y = bottom() - ACTION_H + (ACTION_H - SnowButton.HEIGHT) / 2;
-        int x0 = left() + 10;
-        int w = (cardW() - 20 - GAP * 3) / 4;
-        mainButton = addRenderableWidget(new SnowButton(x0, y, w, Component.literal("Sit"), () -> mainAction.run()));
-        findButton = addRenderableWidget(new SnowButton(x0 + (w + GAP), y, w, Component.literal("Find"),
-                () -> sendAndClose(Action.FIND)));
-        callButton = addRenderableWidget(new SnowButton(x0 + (w + GAP) * 2, y, w, Component.literal("Call"),
-                () -> sendAndClose(Action.CALL)));
-        giveButton = addRenderableWidget(new SnowButton(x0 + (w + GAP) * 3, y, w, Component.literal("Give"), () -> {
+        int w = (BOOK_W - BUTTON_GAP * 4) / 5;
+        int x = bookX();
+        int y = buttonY();
+        mainButton = addRenderableWidget(Button.builder(Component.literal("Sit"), b -> mainAction.run())
+                .bounds(x, y, w, BUTTON_H).build());
+        findButton = addRenderableWidget(Button.builder(Component.literal("Find"), b -> sendAndClose(Action.FIND))
+                .bounds(x + (w + BUTTON_GAP), y, w, BUTTON_H).build());
+        callButton = addRenderableWidget(Button.builder(Component.literal("Call"), b -> sendAndClose(Action.CALL))
+                .bounds(x + (w + BUTTON_GAP) * 2, y, w, BUTTON_H).build());
+        giveButton = addRenderableWidget(Button.builder(Component.literal("Give"), b -> {
             giving = true;
             armedPlayer = null;
             stopRenaming();
             sync();
-        }));
-        cancelButton = addRenderableWidget(new SnowButton(x0 + (w + GAP) * 3, y, w, Component.literal("Cancel"), () -> {
+        }).bounds(x + (w + BUTTON_GAP) * 3, y, w, BUTTON_H).build());
+        cancelButton = addRenderableWidget(Button.builder(Component.literal("Cancel"), b -> {
             giving = false;
             sync();
-        }));
+        }).bounds(x + (w + BUTTON_GAP) * 3, y, w, BUTTON_H).build());
+        doneButton = addRenderableWidget(Button.builder(Component.literal("Done"), b -> onClose())
+                .bounds(bookX() + BOOK_W - w, y, w, BUTTON_H).build());
+
+        backPage = addRenderableWidget(new PageButton(bookX() + MARGIN + 4, arrowY(), false, b -> turn(-1), true));
+        nextPage = addRenderableWidget(new PageButton(bookX() + BOOK_W - MARGIN - 27, arrowY(), true, b -> turn(1), true));
         shownPet = null;
         sync();
     }
@@ -209,25 +239,25 @@ public final class PetScreen extends Screen {
     private void sync() {
         PetsPacket.Pet pet = selected();
         PetsPacket.Details d = state.details();
-        boolean alive = pet != null && !pet.dead();
         if (pet != null && !pet.id().equals(shownPet)) {
             shownPet = pet.id();
             giving = false;
             stopRenaming();
-            showTab(state.pets().indexOf(pet));
         }
+        boolean onPet = contentsPage < 0 && pet != null;
+        boolean alive = onPet && !pet.dead();
         if (!alive) {
             stopRenaming();
         }
         nameBox.visible = renaming;
 
-        boolean far = pet != null && !d.near();
-        boolean forgettable = pet != null && (pet.dead() || !pet.loaded());
-        if (pet != null && pet.dead()) {
+        boolean far = onPet && !d.near();
+        boolean forgettable = onPet && (pet.dead() || !pet.loaded());
+        if (onPet && pet.dead()) {
             setMain("Forget", () -> send(Action.FORGET), true);
-        } else if (d.canSit()) {
+        } else if (onPet && d.canSit()) {
             setMain(d.sitting() ? "Stand" : "Sit", () -> send(Action.SIT), d.near());
-        } else if (d.hasInventory()) {
+        } else if (onPet && d.hasInventory()) {
             setMain("Gear", () -> send(Action.INVENTORY), d.near());
         } else if (forgettable) {
             setMain("Forget", () -> send(Action.FORGET), true);
@@ -235,11 +265,12 @@ public final class PetScreen extends Screen {
             setMain("Sit", () -> { }, false);
         }
         mainButton.setTooltip(far && mainButton.getMessage().getString().matches("Sit|Stand|Gear")
-                ? net.minecraft.client.gui.components.Tooltip.create(Component.literal("Too far away. Call it first."))
+                ? Tooltip.create(Component.literal("Too far away. Call it first."))
                 : null);
         findButton.active = alive;
         callButton.active = alive && state.allowCall();
-        callButton.primary(alive && far && state.allowCall());
+        callButton.setTooltip(alive && far && state.allowCall()
+                ? Tooltip.create(Component.literal("Brings it to you")) : null);
         giveButton.active = alive && state.allowGive();
 
         mainButton.visible = !giving;
@@ -247,23 +278,24 @@ public final class PetScreen extends Screen {
         callButton.visible = !giving;
         giveButton.visible = !giving;
         cancelButton.visible = giving;
+
+        backPage.visible = currentPage() > 0;
+        nextPage.visible = currentPage() < pageCount() - 1;
+        if (settingsOpen) {
+            for (var child : children()) {
+                if (child instanceof net.minecraft.client.gui.components.AbstractWidget widget) {
+                    widget.visible = false;
+                }
+            }
+        } else {
+            doneButton.visible = true;
+        }
     }
 
     private void setMain(String label, Runnable action, boolean active) {
         mainButton.setMessage(Component.literal(label));
         mainAction = action;
         mainButton.active = active;
-    }
-
-    private void showTab(int index) {
-        if (index < 0) {
-            return;
-        }
-        if (index < firstTab) {
-            firstTab = index;
-        } else if (index >= firstTab + maxTabs()) {
-            firstTab = index - maxTabs() + 1;
-        }
     }
 
     private static String typedName(PetsPacket.Pet pet) {
@@ -290,24 +322,38 @@ public final class PetScreen extends Screen {
         onClose();
     }
 
-    private void select(int index) {
+    /** Opens the spread of pet {@code index}. */
+    private void openPet(int index) {
         if (index < 0 || index >= state.pets().size()) {
             return;
         }
         PetsPacket.Pet pet = state.pets().get(index);
+        contentsPage = -1;
+        giving = false;
         if (!pet.id().equals(state.selected())) {
             ClientPets.send(new PetActionPacket(Action.SELECT, pet.id()));
-            click();
         }
-        showTab(index);
+        sync();
     }
 
-    private void step(int delta) {
-        int index = state.pets().indexOf(selected());
-        int size = state.pets().size();
-        if (size > 1) {
-            select(Math.floorMod(index + delta, size));
+    /** Goes to book page {@code page}: the contents first, then one page per pet. */
+    private void goTo(int page) {
+        page = Math.clamp(page, 0, pageCount() - 1);
+        if (page == currentPage()) {
+            return;
         }
+        stopRenaming();
+        if (page < contentsPages()) {
+            contentsPage = page;
+            giving = false;
+            sync();
+        } else {
+            openPet(page - contentsPages());
+        }
+    }
+
+    private void turn(int delta) {
+        goTo(currentPage() + delta);
     }
 
     private void startRenaming() {
@@ -346,6 +392,10 @@ public final class PetScreen extends Screen {
         Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1f));
     }
 
+    private void pageSound() {
+        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.BOOK_PAGE_TURN, 1f));
+    }
+
     @Override
     public boolean isPauseScreen() {
         return false;
@@ -363,6 +413,12 @@ public final class PetScreen extends Screen {
 
     @Override
     public boolean keyPressed(KeyEvent event) {
+        if (settingsOpen) {
+            if (event.key() == KEY_ESCAPE) {
+                closeSettings();
+            }
+            return true;
+        }
         if (renaming) {
             if (event.key() == KEY_ENTER) {
                 saveName();
@@ -379,12 +435,14 @@ public final class PetScreen extends Screen {
             sync();
             return true;
         }
-        if (event.key() == KEY_LEFT) {
-            step(-1);
+        if (event.key() == KEY_LEFT && currentPage() > 0) {
+            turn(-1);
+            pageSound();
             return true;
         }
-        if (event.key() == KEY_RIGHT) {
-            step(1);
+        if (event.key() == KEY_RIGHT && currentPage() < pageCount() - 1) {
+            turn(1);
+            pageSound();
             return true;
         }
         return super.keyPressed(event);
@@ -397,18 +455,25 @@ public final class PetScreen extends Screen {
         if (renaming && !nameBox.isMouseOver(mx, my)) {
             saveName();
         }
+        if (settingsOpen) {
+            settingsClick(mx, my, event.hasShiftDown());
+            return true;
+        }
+        if (overGear(mx, my)) {
+            openSettings();
+            return true;
+        }
         if (super.mouseClicked(event, doubleClick)) {
             return true;
         }
-        int tab = tabAt(mx, my);
-        if (tab >= 0) {
-            select(tab);
-            return true;
-        }
-        if (overClose(mx, my)) {
-            click();
-            onClose();
-            return true;
+        if (contentsPage >= 0) {
+            int pet = contentsAt(mx, my);
+            if (pet >= 0) {
+                openPet(pet);
+                pageSound();
+                return true;
+            }
+            return false;
         }
         if (giving) {
             int person = personAt(mx, my);
@@ -446,8 +511,17 @@ public final class PetScreen extends Screen {
 
     @Override
     public boolean mouseScrolled(double x, double y, double scrollX, double scrollY) {
+        if (settingsOpen) {
+            int most = Math.max(0, state.settings().size() - settingsRows());
+            settingsScroll = Math.clamp(settingsScroll + (scrollY > 0 ? -1 : 1), 0, most);
+            return true;
+        }
         if (scrollY != 0 && !renaming) {
-            step(scrollY > 0 ? -1 : 1);
+            int before = currentPage();
+            turn(scrollY > 0 ? -1 : 1);
+            if (currentPage() != before) {
+                pageSound();
+            }
             return true;
         }
         return super.mouseScrolled(x, y, scrollX, scrollY);
@@ -455,171 +529,533 @@ public final class PetScreen extends Screen {
 
     // ================================================================ hit tests
 
-    private int tabAt(double mx, double my) {
-        if (my < tabY() || my >= tabY() + TAB) {
+    /** The contents row under the cursor, as a pet index, or -1. */
+    private int contentsAt(double mx, double my) {
+        int perPage = contentsPerPage();
+        int top = bookY() + CONTENTS_TOP;
+        if (my < top || my >= top + perPage * CONTENTS_ROW) {
             return -1;
         }
-        for (int slot = 0; slot < maxTabs(); slot++) {
-            int index = firstTab + slot;
-            if (index >= state.pets().size()) {
-                break;
+        int column;
+        if (mx >= leftX0() && mx < leftX1()) {
+            column = 0;
+        } else if (mx >= rightX0() && mx < rightX1()) {
+            column = 1;
+        } else {
+            return -1;
+        }
+        int index = contentsPage * perPage * 2 + column * perPage + (int) (my - top) / CONTENTS_ROW;
+        return index < state.pets().size() ? index : -1;
+    }
+
+    private boolean overName(double mx, double my) {
+        PetsPacket.Pet pet = selected();
+        if (contentsPage >= 0 || pet == null || pet.dead() || renaming || giving) {
+            return false;
+        }
+        int w = Math.min(leftX1() - leftX0(), font.width(title(pet)));
+        int x = (leftX0() + leftX1() - w) / 2;
+        return mx >= x && mx < x + w && my >= nameY() - 1 && my < nameY() + 10;
+    }
+
+    private int takeOffX() {
+        return rightX1() - font.width("Take off");
+    }
+
+    private boolean overTakeOff(double mx, double my) {
+        PetsPacket.Details d = state.details();
+        return contentsPage < 0 && !giving && d.scarfFits() && d.scarf() >= 0
+                && mx >= takeOffX() && mx < rightX1() && my >= scarfY() - 1 && my < scarfY() + 10;
+    }
+
+    private int feedX() {
+        return rightX0() + LABEL_W;
+    }
+
+    private int foodAt(double mx, double my) {
+        PetsPacket.Pet pet = selected();
+        if (contentsPage >= 0 || giving || pet == null || pet.dead()) {
+            return -1;
+        }
+        int x0 = feedX();
+        if (my < feedY() || my >= feedY() + TILE || mx < x0) {
+            return -1;
+        }
+        int food = (int) (mx - x0) / TILE;
+        return food < state.details().foods().size() && food < foodFits() ? food : -1;
+    }
+
+    private int foodFits() {
+        return (rightX1() - feedX()) / TILE;
+    }
+
+    private int personTop() {
+        return pageTop() + 26;
+    }
+
+    private int personAt(double mx, double my) {
+        if (mx < rightX0() || mx >= rightX1() || my < personTop()) {
+            return -1;
+        }
+        int person = (int) (my - personTop()) / ROW;
+        return person < state.players().size() && personTop() + (person + 1) * ROW <= arrowY() ? person : -1;
+    }
+
+    // ================================================================ drawing
+
+    @Override
+    public void extractRenderState(GuiGraphicsExtractor gfx, int mouseX, int mouseY, float a) {
+        drawBook(gfx);
+        if (settingsOpen) {
+            // Only the closed-looking book behind the settings: its text would show through the shade.
+            drawGear(gfx, mouseX, mouseY);
+            super.extractRenderState(gfx, mouseX, mouseY, a);
+            drawSettings(gfx, mouseX, mouseY);
+            drawNotice(gfx);
+            return;
+        }
+        PetsPacket.Pet pet = selected();
+        if (contentsPage >= 0 || pet == null) {
+            drawContents(gfx, mouseX, mouseY);
+        } else {
+            drawLeftPage(gfx, pet, mouseX, mouseY);
+            if (giving) {
+                drawGive(gfx, pet, mouseX, mouseY);
+            } else {
+                drawRightPage(gfx, pet, mouseX, mouseY);
             }
-            if (mx >= tabX(slot) && mx < tabX(slot) + TAB) {
-                return index;
+        }
+        String indicator = "Page " + (currentPage() + 1) + " of " + pageCount();
+        gfx.text(font, indicator, rightX1() - font.width(indicator), pageTop(), FADED, false);
+        drawGear(gfx, mouseX, mouseY);
+        drawNotice(gfx);
+        super.extractRenderState(gfx, mouseX, mouseY, a);
+    }
+
+    /** Two pages of the vanilla book; the left one mirrored so both stitchings meet at the spine. */
+    private void drawBook(GuiGraphicsExtractor gfx) {
+        int x = bookX();
+        int y = bookY();
+        float u0 = PAGE_U / 256f;
+        float u1 = (PAGE_U + PAGE_W) / 256f;
+        float v0 = PAGE_V / 256f;
+        float v1 = (PAGE_V + PAGE_H) / 256f;
+        BookStyle style = BookStyle.current();
+        Identifier book = style.texture();
+        drawRibbon(gfx, style, true);
+        gfx.blit(book, x, y, x + PAGE_W, y + PAGE_H, u1, u0, v0, v1);
+        gfx.blit(book, x + PAGE_W, y, x + BOOK_W, y + PAGE_H, u0, u1, v0, v1);
+        // The pages curve down into the spine: a soft shadow on both sides of it, then the crease.
+        int mid = x + PAGE_W;
+        for (int i = 0; i < 12; i++) {
+            float k = 1f - i / 12f;
+            int alpha = Math.round(k * k * 70);
+            gfx.fill(mid - 1 - i, y + 6, mid - i, y + PAGE_H - 6, alpha << 24 | 0x553F28);
+            gfx.fill(mid + i, y + 6, mid + i + 1, y + PAGE_H - 6, alpha << 24 | 0x553F28);
+        }
+        gfx.fill(mid - 1, y + 5, mid + 1, y + PAGE_H - 4, 0xFF000000 | brighten(style.swatch() & 0xFFFFFF, 0.55f));
+        drawRibbon(gfx, style, false);
+    }
+
+    private int ribbonX() {
+        return bookX() + BOOK_W - 44;
+    }
+
+    /** The bookmark: peeking out above the right page ({@code top}) and hanging below the book. */
+    private void drawRibbon(GuiGraphicsExtractor gfx, BookStyle style, boolean top) {
+        if (style.ribbon == 0) {
+            return;
+        }
+        int x = ribbonX();
+        int c = 0xFF000000 | style.ribbon;
+        int light = 0xFF000000 | brighten(style.ribbon, 1.25f);
+        int dark = 0xFF000000 | brighten(style.ribbon, 0.7f);
+        if (top) {
+            int y = bookY() - 4;
+            gfx.fill(x, y, x + 5, y + 8, c);
+            gfx.fill(x + 1, y, x + 2, y + 8, light);
+            gfx.fill(x + 4, y, x + 5, y + 8, dark);
+            return;
+        }
+        int y = bookY() + PAGE_H - 3;
+        gfx.fill(x, y, x + 5, y + 7, c);
+        gfx.fill(x + 1, y, x + 2, y + 7, light);
+        gfx.fill(x + 4, y, x + 5, y + 7, dark);
+        // a forked end
+        gfx.fill(x, y + 7, x + 2, y + 9, c);
+        gfx.fill(x + 3, y + 7, x + 5, y + 9, dark);
+    }
+
+    private static int brighten(int rgb, float k) {
+        int r = Math.clamp(Math.round((rgb >> 16 & 0xFF) * k), 0, 255);
+        int g = Math.clamp(Math.round((rgb >> 8 & 0xFF) * k), 0, 255);
+        int b = Math.clamp(Math.round((rgb & 0xFF) * k), 0, 255);
+        return r << 16 | g << 8 | b;
+    }
+
+    // ================================================================ settings
+
+    private static final String[] GEAR = {
+            "X.XXX.X",
+            ".XXXXX.",
+            "XXX.XXX",
+            "XX...XX",
+            "XXX.XXX",
+            ".XXXXX.",
+            "X.XXX.X"};
+
+    private int gearX() {
+        return bookX() + 14;
+    }
+
+    private int gearY() {
+        return bookY() - GEAR_H + 2;
+    }
+
+    private boolean overGear(double mx, double my) {
+        return mx >= gearX() && mx < gearX() + GEAR_W && my >= gearY() && my < gearY() + GEAR_H;
+    }
+
+    /** A small tab on top of the cover with a gear: opens the settings. */
+    private void drawGear(GuiGraphicsExtractor gfx, int mx, int my) {
+        boolean hot = !settingsOpen && overGear(mx, my);
+        int cover = BookStyle.current().swatch() & 0xFFFFFF;
+        int x = gearX();
+        int y = gearY();
+        gfx.fill(x, y, x + GEAR_W, y + GEAR_H, 0xFF000000 | brighten(cover, 0.55f));
+        gfx.fill(x + 1, y + 1, x + GEAR_W - 1, y + GEAR_H, 0xFF000000 | brighten(cover, hot ? 1.45f : 1.1f));
+        int ink = hot ? 0xFFFFE9A8 : 0xFFE2C478;
+        for (int j = 0; j < GEAR.length && j < GEAR_H - 2; j++) {
+            for (int i = 0; i < GEAR[j].length(); i++) {
+                if (GEAR[j].charAt(i) == 'X') {
+                    gfx.fill(x + 4 + i, y + 2 + j, x + 5 + i, y + 3 + j, ink);
+                }
+            }
+        }
+        if (hot) {
+            gfx.setTooltipForNextFrame(font, Component.literal("Settings"), mx, my);
+        }
+    }
+
+    private void openSettings() {
+        settingsOpen = true;
+        settingsScroll = 0;
+        stopRenaming();
+        giving = false;
+        pageSound();
+        sync();
+    }
+
+    private void closeSettings() {
+        settingsOpen = false;
+        pageSound();
+        sync();
+    }
+
+    private int panelW() {
+        return PAGE_W + 6;
+    }
+
+    private int panelX() {
+        return (width - panelW()) / 2;
+    }
+
+    private int panelY() {
+        return bookY();
+    }
+
+    private int panelX0() {
+        return panelX() + 20;
+    }
+
+    private int panelX1() {
+        return panelX() + panelW() - 16;
+    }
+
+    private int swatchY() {
+        return panelY() + 40;
+    }
+
+    private int rulesTop() {
+        return panelY() + 76;
+    }
+
+    private int settingsRows() {
+        return (panelY() + PAGE_H - 34 - rulesTop()) / SETTINGS_ROW;
+    }
+
+    private int doneY() {
+        return panelY() + PAGE_H - 26;
+    }
+
+    private int swatchAt(double mx, double my) {
+        if (my < swatchY() || my >= swatchY() + 12) {
+            return -1;
+        }
+        for (int i = 0; i < BookStyle.values().length; i++) {
+            int x = panelX0() + i * 26;
+            if (mx >= x && mx < x + 22) {
+                return i;
             }
         }
         return -1;
     }
 
-    private boolean overClose(double mx, double my) {
-        return mx >= closeX() && mx < closeX() + 12 && my >= tabY() + 5 && my < tabY() + 17;
-    }
-
-    private boolean overName(double mx, double my) {
-        PetsPacket.Pet pet = selected();
-        if (pet == null || pet.dead() || renaming) {
-            return false;
-        }
-        int w = Math.min(infoW(), Math.round(font.width(pet.displayName()) * NAME_SCALE));
-        return mx >= infoX() && mx < infoX() + w && my >= nameY() && my < nameY() + 13;
-    }
-
-    private int takeOffX() {
-        return infoX() + infoW() - font.width("Take off");
-    }
-
-    private boolean overTakeOff(double mx, double my) {
-        PetsPacket.Details d = state.details();
-        return d.scarf() >= 0 && mx >= takeOffX() && mx < infoX() + infoW() && my >= scarfY() - 1 && my < scarfY() + 10;
-    }
-
-    private int foodAt(double mx, double my) {
-        int x0 = infoX() + 30;
-        if (my < feedY() || my >= feedY() + TILE || mx < x0) {
+    private int settingAt(double my) {
+        if (my < rulesTop()) {
             return -1;
         }
-        int food = (int) (mx - x0) / (TILE + 2);
-        int fits = (infoX() + infoW() - x0 + 2) / (TILE + 2);
-        return food < state.details().foods().size() && food < fits ? food : -1;
+        int row = (int) (my - rulesTop()) / SETTINGS_ROW;
+        int index = settingsScroll + row;
+        return row < settingsRows() && index < state.settings().size() ? index : -1;
     }
 
-    private int personTop() {
-        return bodyY0() + 28;
+    private boolean overDone(double mx, double my) {
+        int w = font.width("Done");
+        int x = (panelX0() + panelX1() - w) / 2;
+        return mx >= x - 4 && mx < x + w + 4 && my >= doneY() - 2 && my < doneY() + 10;
     }
 
-    private int personAt(double mx, double my) {
-        if (mx < infoX() || mx >= infoX() + infoW() || my < personTop()) {
-            return -1;
+    private void settingsClick(double mx, double my, boolean shift) {
+        if (overDone(mx, my)) {
+            closeSettings();
+            return;
         }
-        int person = (int) (my - personTop()) / 16;
-        return person < state.players().size() && personTop() + (person + 1) * 16 <= bodyY1() ? person : -1;
-    }
-
-    // ================================================================ drawing
-
-    /** Where the deep snow starts; the pet stands on it. */
-    private int ground() {
-        return bottom() - ACTION_H - 12;
-    }
-
-    @Override
-    public void extractRenderState(GuiGraphicsExtractor gfx, int mouseX, int mouseY, float a) {
-        gfx.fill(0, 0, width, height, Ui.SHADE);
-        int x0 = left();
-        int y0 = top();
-        int x1 = right();
-        int y1 = bottom();
-        PetsPacket.Pet pet = selected();
-        Festive.scene(gfx, x0, y0, x1, y1, ground(), previewX0(), previewX1());
-        gfx.enableScissor(x0, y0, x1, y1);
-        drawPet(gfx, pet, mouseX, mouseY);
-        Festive.snowfall(gfx, x0, y0, x1, y1, 60, 0.85f, 3);
-        gfx.disableScissor();
-
-        drawTabs(gfx, mouseX, mouseY);
-        drawClose(gfx, mouseX, mouseY);
-        if (pet != null) {
-            int px0 = infoX() - 7;
-            int py0 = bodyY0() - 5;
-            int px1 = right() - 6;
-            int py1 = bodyY1() + 4;
-            Festive.panel(gfx, px0, py0, px1, py1, Ui.PANEL, Ui.PANEL_EDGE);
-            if (giving) {
-                drawGive(gfx, pet, mouseX, mouseY);
-            } else {
-                drawInfo(gfx, pet, mouseX, mouseY);
+        int swatch = swatchAt(mx, my);
+        if (swatch >= 0) {
+            BookStyle.choose(BookStyle.values()[swatch]);
+            click();
+            return;
+        }
+        int index = settingAt(my);
+        if (index < 0 || !state.canEditSettings() || mx < panelX0() || mx >= panelX1()) {
+            return;
+        }
+        PetsPacket.Setting setting = state.settings().get(index);
+        String value;
+        if (!setting.number()) {
+            value = setting.value() == 0 ? "true" : "false";
+        } else {
+            int step = (setting.max() - setting.min() > 200 ? 5 : 1) * (shift ? 10 : 1);
+            boolean up = mx >= panelX1() - 8;
+            boolean down = mx >= panelX1() - 44 && mx < panelX1() - 36;
+            if (!up && !down) {
+                return;
             }
+            value = String.valueOf(Math.clamp(setting.value() + (up ? step : -step), setting.min(), setting.max()));
         }
-        drawNotice(gfx);
-        super.extractRenderState(gfx, mouseX, mouseY, a);
+        ClientPets.send(new PetActionPacket(Action.SETTING, state.selected(), 0, setting.key() + "=" + value));
+        click();
     }
 
-    private void drawTabs(GuiGraphicsExtractor gfx, int mx, int my) {
-        List<PetsPacket.Pet> pets = state.pets();
-        int hovered = tabAt(mx, my);
-        int shown = Math.min(maxTabs(), pets.size() - firstTab);
-        for (int slot = 0; slot < shown; slot++) {
-            int index = firstTab + slot;
-            PetsPacket.Pet pet = pets.get(index);
-            int x = tabX(slot);
-            int y = tabY();
-            boolean on = pet.id().equals(state.selected());
+    /** The settings: a single page of the same book, laid on top of it. */
+    private void drawSettings(GuiGraphicsExtractor gfx, int mx, int my) {
+        // A new layer, so the shade lies over the book and not just the world behind it.
+        gfx.nextStratum();
+        gfx.fill(0, 0, width, height, 0x88000000);
+        BookStyle style = BookStyle.current();
+        int x = panelX();
+        int y = panelY();
+        gfx.blit(style.texture(), x, y, x + panelW(), y + PAGE_H, 20 / 256f, 166 / 256f, PAGE_V / 256f,
+                (PAGE_V + PAGE_H) / 256f);
+        int x0 = panelX0();
+        int x1 = panelX1();
+        centered(gfx, Component.literal("Settings").withStyle(Style.EMPTY.withBold(true)), x0, x1, y + 14, INK);
+
+        gfx.text(font, "Book", x0, y + 29, FADED, false);
+        gfx.text(font, style.label, x1 - font.width(style.label), y + 29, INK, false);
+        int hovered = swatchAt(mx, my);
+        BookStyle[] styles = BookStyle.values();
+        for (int i = 0; i < styles.length; i++) {
+            int sx = x0 + i * 26;
+            int sy = swatchY();
+            boolean on = styles[i] == style;
+            gfx.fill(sx - 1, sy - 1, sx + 23, sy + 13, on ? INK : (i == hovered ? FADED : 0x30553F28));
+            gfx.fill(sx, sy, sx + 22, sy + 12, styles[i].swatch());
+            if (styles[i].ribbon != 0) {
+                gfx.fill(sx + 16, sy, sx + 19, sy + 12, 0xFF000000 | styles[i].ribbon);
+            }
             if (on) {
-                Ui.framed(gfx, x, y, x + TAB, y + TAB, Ui.ACCENT_SOFT, Ui.ACCENT);
+                gfx.fill(sx + 2, sy + 14, sx + 20, sy + 15, INK);
+            }
+            if (i == hovered) {
+                gfx.setTooltipForNextFrame(font, Component.literal(styles[i].label), mx, my);
+            }
+        }
+
+        gfx.fill(x0, y + 59, x1, y + 60, RULE);
+        boolean canEdit = state.canEditSettings();
+        gfx.text(font, "Pet rules", x0, y + 63, FADED, false);
+        if (!canEdit) {
+            String note = "ops only";
+            gfx.text(font, note, x1 - font.width(note), y + 63, RED, false);
+        }
+        List<PetsPacket.Setting> settings = state.settings();
+        int rows = settingsRows();
+        int hot = settingAt(my);
+        for (int r = 0; r < rows && settingsScroll + r < settings.size(); r++) {
+            int index = settingsScroll + r;
+            PetsPacket.Setting setting = settings.get(index);
+            int ry = rulesTop() + r * SETTINGS_ROW;
+            boolean rowHot = index == hot && mx >= x0 && mx < x1;
+            if (rowHot && canEdit) {
+                gfx.fill(x0 - 2, ry - 2, x1 + 2, ry + SETTINGS_ROW - 2, HOVER);
+            }
+            int valueW;
+            if (setting.number()) {
+                String number = String.valueOf(setting.value());
+                valueW = 44;
+                int vx = x1 - valueW;
+                boolean downHot = rowHot && canEdit && mx >= x1 - 44 && mx < x1 - 36;
+                boolean upHot = rowHot && canEdit && mx >= x1 - 8;
+                gfx.text(font, "<", vx, ry, canEdit ? (downHot ? RED_HOT : INK) : FADED, false);
+                gfx.text(font, number, vx + 22 - font.width(number) / 2, ry, canEdit ? INK : FADED, false);
+                gfx.text(font, ">", x1 - 5, ry, canEdit ? (upHot ? RED_HOT : INK) : FADED, false);
             } else {
-                Ui.framed(gfx, x, y, x + TAB, y + TAB, index == hovered ? Ui.BUTTON_HOVER : 0x900B1424,
-                        index == hovered ? Ui.BUTTON_EDGE_HOT : 0x8034507A);
+                String word = setting.value() != 0 ? "On" : "Off";
+                valueW = font.width("Off");
+                int color = !canEdit ? FADED : setting.value() != 0 ? 0xFF2F6B2A : RED;
+                gfx.text(font, word, x1 - font.width(word), ry, color, false);
             }
-            gfx.item(icon(pet), x + 3, y + 3);
-            if (pet.dead()) {
-                gfx.fill(x + 3, y + 3, x + 19, y + 19, 0x99121318);
-            }
-            if (index == hovered) {
-                gfx.setTooltipForNextFrame(font, pet.displayName(), mx, my);
+            gfx.text(font, Ui.fit(font, label(setting.key()), x1 - x0 - valueW - 4), x0, ry, canEdit ? INK : FADED, false);
+            if (rowHot) {
+                List<Component> tip = new ArrayList<>();
+                tip.add(Component.literal(setting.description()));
+                if (setting.number() && canEdit) {
+                    tip.add(Component.literal("Click < or >, hold Shift for bigger steps")
+                            .withStyle(Style.EMPTY.withColor(0xA0A0A0)));
+                }
+                gfx.setComponentTooltipForNextFrame(font, tip, mx, my);
             }
         }
-        if (firstTab > 0) {
-            gfx.text(font, "<", tabX(0) - 7, tabY() + 7, Ui.FAINT, false);
+        if (settingsScroll > 0) {
+            gfx.text(font, "^", x1 + 4, rulesTop(), FADED, false);
         }
-        if (firstTab + shown < pets.size()) {
-            gfx.text(font, ">", tabX(shown) + 1, tabY() + 7, Ui.FAINT, false);
+        if (settingsScroll + rows < settings.size()) {
+            gfx.text(font, "v", x1 + 4, rulesTop() + (rows - 1) * SETTINGS_ROW, FADED, false);
+        }
+
+        boolean doneHot = overDone(mx, my);
+        int w = font.width("Done");
+        int dx = (x0 + x1 - w) / 2;
+        gfx.text(font, "Done", dx, doneY(), doneHot ? RED_HOT : RED, false);
+        gfx.fill(dx, doneY() + 9, dx + w, doneY() + 10, doneHot ? RED_HOT : RED);
+    }
+
+    /** A setting's name for people: known keys get a short label, others are split at capitals. */
+    private static String label(String key) {
+        return switch (key) {
+            case "enabled" -> "Better Pets on";
+            case "petMenu" -> "Pet book";
+            case "protectFromOwner" -> "Owner can't hurt pets";
+            case "strongLeads" -> "Strong leads";
+            case "deathAlerts" -> "Death alerts";
+            case "allowCall" -> "Allow Call";
+            case "callCooldownSeconds" -> "Call cooldown (s)";
+            case "allowRename" -> "Allow renaming";
+            case "allowGive" -> "Allow giving";
+            case "findSeconds" -> "Find glow (s)";
+            case "scarves" -> "Pet scarves";
+            case "sleepOnBed" -> "Dogs sleep on beds";
+            case "snowyCoats" -> "Snowy coats";
+            default -> {
+                String words = key.replaceAll("([a-z])([A-Z])", "$1 $2").toLowerCase();
+                yield Character.toUpperCase(words.charAt(0)) + words.substring(1);
+            }
+        };
+    }
+
+    private void centered(GuiGraphicsExtractor gfx, Component text, int x0, int x1, int y, int color) {
+        int w = font.width(text);
+        if (w > x1 - x0) {
+            String cut = Ui.fit(font, text.getString(), x1 - x0);
+            gfx.text(font, cut, (x0 + x1 - font.width(cut)) / 2, y, color, false);
+        } else {
+            gfx.text(font, text, (x0 + x1 - w) / 2, y, color, false);
         }
     }
 
-    private void drawClose(GuiGraphicsExtractor gfx, int mx, int my) {
-        boolean hot = overClose(mx, my);
-        int x = closeX();
-        int y = tabY() + 5;
-        if (hot) {
-            Ui.framed(gfx, x - 2, y - 2, x + 14, y + 14, Ui.BUTTON_HOVER, Ui.BUTTON_EDGE_HOT);
+    private void drawContents(GuiGraphicsExtractor gfx, int mx, int my) {
+        if (contentsPage <= 0) {
+            centered(gfx, Component.literal("My Pets").withStyle(Style.EMPTY.withBold(true)), leftX0(), leftX1(), pageTop(), INK);
+        } else {
+            centered(gfx, Component.literal("My Pets, continued"), leftX0(), leftX1(), pageTop(), FADED);
         }
-        int color = hot ? Ui.TEXT : Ui.DIM;
-        for (int i = 0; i < 10; i++) {
-            gfx.fill(x + 1 + i, y + 1 + i, x + 2 + i, y + 2 + i, color);
-            gfx.fill(x + 10 - i, y + 1 + i, x + 11 - i, y + 2 + i, color);
+        int top = bookY() + CONTENTS_TOP;
+        gfx.fill(leftX0(), top - 6, leftX1(), top - 5, RULE);
+        gfx.fill(rightX0(), top - 6, rightX1(), top - 5, RULE);
+        List<PetsPacket.Pet> pets = state.pets();
+        if (pets.isEmpty()) {
+            gfx.textWithWordWrap(font, Component.literal("No pets yet. Tame one and it shows up here."),
+                    leftX0(), top, leftX1() - leftX0(), FADED, false);
+            return;
         }
+        int perPage = contentsPerPage();
+        int hovered = contentsAt(mx, my);
+        int first = Math.max(0, contentsPage) * perPage * 2;
+        for (int i = first; i < pets.size() && i < first + perPage * 2; i++) {
+            PetsPacket.Pet pet = pets.get(i);
+            boolean leftSide = i - first < perPage;
+            int x0 = leftSide ? leftX0() : rightX0();
+            int x1 = leftSide ? leftX1() : rightX1();
+            int y = top + ((i - first) % perPage) * CONTENTS_ROW;
+            if (i == hovered) {
+                gfx.fill(x0 - 2, y - 1, x1 + 2, y + CONTENTS_ROW - 1, HOVER);
+            }
+            gfx.item(icon(pet), x0, y);
+            if (pet.dead()) {
+                gfx.fill(x0, y, x0 + 16, y + 16, 0x88E8DBB5);
+            }
+            String hp = pet.dead() ? "gone" : PetBrain.health(pet.health(), pet.maxHealth());
+            int hpX = x1 - font.width(hp);
+            gfx.text(font, hp, hpX, y + 4, pet.dead() ? RED : FADED, false);
+            String name = Ui.fit(font, pet.displayName().getString(), hpX - (x0 + 20) - 4);
+            Component shown = name.equals(pet.displayName().getString()) ? pet.displayName() : Component.literal(name);
+            gfx.text(font, shown, x0 + 20, y + 4, pet.dead() ? FADED : INK, false);
+            if (i == hovered) {
+                gfx.setTooltipForNextFrame(font, Component.literal("Open " + pet.displayName().getString() + "'s page"), mx, my);
+            }
+        }
+    }
+
+    /** The pet's name as the page title: bold, in its own colours if it has them. */
+    private static Component title(PetsPacket.Pet pet) {
+        return pet.displayName().copy().withStyle(st -> st.withBold(true));
     }
 
     private float lookX = Float.NaN;
     private float lookY = Float.NaN;
     private long lookTime;
 
-    private void drawPet(GuiGraphicsExtractor gfx, PetsPacket.Pet pet, int mx, int my) {
-        int x0 = previewX0();
-        int y0 = bodyY0();
-        int x1 = previewX1();
-        int ground = ground();
-        if (entity() instanceof LivingEntity living) {
-            int size = previewSize(living, x1 - x0, ground - y0 + 6);
-            // Vanilla centres the pet in the box it is given; pick a box whose centre puts its feet
-            // in the snow.
-            int feet = ground + 4;
+    private void drawLeftPage(GuiGraphicsExtractor gfx, PetsPacket.Pet pet, int mx, int my) {
+        int x0 = leftX0();
+        int x1 = leftX1();
+        if (!renaming) {
+            boolean hot = overName(mx, my);
+            centered(gfx, title(pet), x0, x1, nameY(), INK);
+            if (hot) {
+                int w = Math.min(x1 - x0, font.width(title(pet)));
+                int x = (x0 + x1 - w) / 2;
+                gfx.fill(x, nameY() + 9, x + w, nameY() + 10, INK);
+                gfx.setTooltipForNextFrame(font, Component.literal("Click to rename"), mx, my);
+            }
+            centered(gfx, pet.species(), x0, x1, nameY() + 12, FADED);
+        } else {
+            gfx.fill(x0, nameY() + 10, x1, nameY() + 11, INK);
+            gfx.textWithWordWrap(font, Component.literal("Enter saves. Colors: &6gold, <#ff55aa>pink"),
+                    x0, nameY() + 15, x1 - x0, FADED, false);
+        }
+
+        int top = nameY() + 30;
+        int feet = arrowY() - 8;
+        if (entity() instanceof LivingEntity living && !pet.dead()) {
+            int size = previewSize(living, x1 - x0, feet - top);
+            // Vanilla centres the pet in the box it is given; pick a box whose centre puts its feet on the line.
             int center = Math.round(feet - living.getBbHeight() * size / 2f);
-            int boxTop = top();
+            int boxTop = top - 40;
             int boxBottom = 2 * center - boxTop;
-            // The pet watches the cursor while it is near, and otherwise turns back to a fixed spot
-            // up and to the right so it shows its side. It eases between the two.
-            boolean near = mx >= x0 - 6 && mx < x1 + 6 && my >= y0 && my < feet + 8;
+            // The pet watches the cursor while it is near, and otherwise looks a little to the right.
+            boolean near = mx >= x0 - 6 && mx < x1 + 6 && my >= top && my < feet + 8;
             float targetX = near ? mx : (x0 + x1) / 2f + 60f;
             float targetY = near ? my : center - living.getBbHeight() * size * 0.3f;
             long now = System.currentTimeMillis();
@@ -632,106 +1068,59 @@ public final class PetScreen extends Screen {
                 lookY += (targetY - lookY) * step;
             }
             lookTime = now;
-            // A soft shadow in the snow under its feet.
             int shadow = Math.round(living.getBbWidth() * size * 0.7f);
             int cx = (x0 + x1) / 2;
-            gfx.fill(cx - shadow, feet - 1, cx + shadow, feet + 1, 0x2A1B2C4A);
-            gfx.fill(cx - shadow + 2, feet + 1, cx + shadow - 2, feet + 2, 0x1A1B2C4A);
+            gfx.fill(cx - shadow, feet, cx + shadow, feet + 1, 0x30553F28);
+            gfx.fill(cx - shadow + 3, feet + 1, cx + shadow - 3, feet + 2, 0x20553F28);
             InventoryScreen.extractEntityInInventoryFollowsMouse(gfx, x0, boxTop, x1, boxBottom, size, 0f,
                     lookX, lookY, living);
-        } else if (pet != null) {
+        } else {
+            // Not loaded (far away) or gone: its egg or a skull, drawn big, with a note.
             int cx = (x0 + x1) / 2;
-            int cy = ground - 22;
-            gfx.item(icon(pet), cx - 8, cy - 14);
-            String text = pet.dead() ? "Gone" : "Far away";
-            int tw = font.width(text);
-            gfx.fill(cx - tw / 2 - 3, cy + 5, cx + tw / 2 + 4, cy + 18, 0xB00B1424);
-            gfx.text(font, text, cx - tw / 2, cy + 8, pet.dead() ? Ui.BAD : Ui.TEXT, false);
+            int cy = (top + feet) / 2;
+            gfx.pose().pushMatrix();
+            gfx.pose().translate(cx - 24, cy - 30);
+            gfx.pose().scale(3f, 3f);
+            gfx.item(icon(pet), 0, 0);
+            gfx.pose().popMatrix();
+            centered(gfx, Component.literal(pet.dead() ? "Gone" : "Far away"), x0, x1, cy + 24, pet.dead() ? RED : FADED);
         }
     }
 
-    /** Fits the pet in the box, tall or long. */
-    private static int previewSize(LivingEntity entity, int boxW, int boxH) {
-        float byHeight = (boxH - 34) / Math.max(0.4f, entity.getBbHeight());
-        float byWidth = (boxW - 16) / Math.max(0.4f, entity.getBbWidth() * 1.6f);
-        return Math.round(Math.clamp(Math.min(byHeight, byWidth), 10f, 64f));
-    }
-
-    private Entity entity() {
-        Minecraft minecraft = Minecraft.getInstance();
-        int id = state.details().entityId();
-        return id < 0 || minecraft.level == null ? null : minecraft.level.getEntity(id);
-    }
-
-    private void drawInfo(GuiGraphicsExtractor gfx, PetsPacket.Pet pet, int mx, int my) {
+    private void drawRightPage(GuiGraphicsExtractor gfx, PetsPacket.Pet pet, int mx, int my) {
         PetsPacket.Details d = state.details();
-        int x = infoX();
-        int w = infoW();
-        int y = nameY();
-        if (!renaming) {
-            drawName(gfx, pet, x, y, w, overName(mx, my));
-            if (overName(mx, my)) {
-                gfx.setTooltipForNextFrame(font, Component.literal("Click to rename"), mx, my);
-            }
-        } else {
-            Ui.framed(gfx, x - 4, y - 2, x + w + 2, y + 15, 0xFF070D1A, Ui.ACCENT);
-        }
-        y += 18;
-        if (renaming) {
-            gfx.text(font, Ui.fit(font, "Enter saves. Colors: &6gold, <#ff55aa>pink", w), x, y, Ui.FAINT, false);
-        } else {
-            String sub = pet.dead() ? pet.species().getString() : pet.species().getString() + "  ·  " + d.status();
-            gfx.text(font, Ui.fit(font, sub, w), x, y, Ui.DIM, false);
-        }
-        y += 13;
-
+        int x = rightX0();
+        int w = rightX1() - x;
+        int y = pageTop() + 16;
         if (pet.dead()) {
             for (var line : font.split(Component.literal(d.death()), w)) {
-                gfx.text(font, line, x, y, Ui.BAD, false);
-                y += LINE;
+                gfx.text(font, line, x, y, RED, false);
+                y += 9;
             }
-            y += 3;
+            y += 6;
             fact(gfx, "Where", d.where(), x, y, w);
             return;
         }
-
         drawHearts(gfx, pet, x, y, w);
-        y += 14;
-        int limit = scarfY() - 3;
+        y += ROW + 3;
+        int limit = scarfY() - 6;
         String place = pet.place().isEmpty() ? d.where() : pet.place();
-        if (y + LINE <= limit) {
+        y = fact(gfx, "Doing", d.status(), x, y, w);
+        if (y + ROW <= limit) {
             y = fact(gfx, "Where", place, x, y, w);
         }
-        if (!d.speed().isEmpty() && y + LINE <= limit) {
+        if (!d.speed().isEmpty() && y + ROW <= limit) {
             y = fact(gfx, "Speed", d.speed(), x, y, w);
         }
-        if (!d.jump().isEmpty() && y + LINE <= limit) {
+        if (!d.jump().isEmpty() && y + ROW <= limit) {
             y = fact(gfx, "Jump", d.jump(), x, y, w);
         }
-        if (!d.since().isEmpty() && y + LINE <= limit) {
+        if (!d.since().isEmpty() && y + ROW <= limit) {
             fact(gfx, "With you", d.since(), x, y, w);
         }
+        gfx.fill(x, scarfY() - 6, rightX1(), scarfY() - 5, RULE);
         drawScarf(gfx, d, x, w, mx, my);
         drawFood(gfx, d, mx, my);
-    }
-
-    /** The name, half again as big as normal text. */
-    private void drawName(GuiGraphicsExtractor gfx, PetsPacket.Pet pet, int x, int y, int w, boolean hot) {
-        Component name = pet.displayName();
-        int room = Math.round(w / NAME_SCALE);
-        gfx.pose().pushMatrix();
-        gfx.pose().translate(x, y);
-        gfx.pose().scale(NAME_SCALE, NAME_SCALE);
-        if (font.width(name) <= room) {
-            gfx.text(font, name, 0, 0, Ui.TEXT, false);
-        } else {
-            gfx.text(font, Ui.fit(font, name.getString(), room), 0, 0, Ui.TEXT, false);
-        }
-        gfx.pose().popMatrix();
-        if (hot) {
-            int nameW = Math.min(w, Math.round(font.width(name) * NAME_SCALE));
-            gfx.fill(x, y + 13, x + nameW, y + 14, Ui.ACCENT);
-        }
     }
 
     private void drawHearts(GuiGraphicsExtractor gfx, PetsPacket.Pet pet, int x, int y, int w) {
@@ -739,35 +1128,41 @@ public final class PetScreen extends Screen {
         float health = Math.clamp(pet.health(), 0f, max);
         int hearts = Math.min(10, (int) Math.ceil(max / 2f));
         float perHeart = max / hearts;
-        int step = Ui.HEART_W + 1;
+        int step = 8;
         for (int i = 0; i < hearts; i++) {
             float inThis = health - i * perHeart;
-            int fill = inThis >= perHeart - 0.01f ? 2 : inThis >= perHeart / 2 - 0.01f ? 1 : 0;
-            Ui.heart(gfx, x + i * step, y, fill);
+            int hx = x + i * step;
+            gfx.blitSprite(RenderPipelines.GUI_TEXTURED, HEART_EMPTY, hx, y, 9, 9);
+            if (inThis >= perHeart - 0.01f) {
+                gfx.blitSprite(RenderPipelines.GUI_TEXTURED, HEART_FULL, hx, y, 9, 9);
+            } else if (inThis >= perHeart / 2 - 0.01f) {
+                gfx.blitSprite(RenderPipelines.GUI_TEXTURED, HEART_HALF, hx, y, 9, 9);
+            }
         }
         String number = PetBrain.health(pet.health(), pet.maxHealth());
-        int numberX = x + hearts * step + 4;
+        int numberX = x + hearts * step + 5;
         if (numberX + font.width(number) <= x + w) {
-            gfx.text(font, number, numberX, y, Ui.FAINT, false);
+            gfx.text(font, number, numberX, y + 1, FADED, false);
         }
     }
 
     private int fact(GuiGraphicsExtractor gfx, String label, String value, int x, int y, int w) {
-        gfx.text(font, label, x, y, Ui.FAINT, false);
-        int offset = Math.max(48, font.width(label) + 6);
-        gfx.text(font, Ui.fit(font, value, w - offset), x + offset, y, Ui.TEXT, false);
-        return y + LINE;
+        gfx.text(font, label, x, y, FADED, false);
+        int offset = LABEL_W;
+        gfx.text(font, Ui.fit(font, value, w - offset), x + offset, y, INK, false);
+        return y + ROW;
     }
 
     private void drawScarf(GuiGraphicsExtractor gfx, PetsPacket.Details d, int x, int w, int mx, int my) {
+        int y = scarfY();
+        gfx.text(font, "Scarf", x, y, FADED, false);
+        int vx = x + LABEL_W;
         if (!d.scarfFits()) {
+            gfx.text(font, Ui.fit(font, "Does not fit", w - LABEL_W), vx, y, FADED, false);
             return;
         }
-        int y = scarfY();
-        gfx.text(font, "Scarf", x, y, Ui.FAINT, false);
-        int vx = x + 48;
         if (d.scarf() < 0) {
-            gfx.text(font, Ui.fit(font, "None", w - 48), vx, y, Ui.DIM, false);
+            gfx.text(font, Ui.fit(font, "None", w - LABEL_W), vx, y, FADED, false);
             if (mx >= vx && mx < x + w && my >= y - 1 && my < y + 10) {
                 gfx.setComponentTooltipForNextFrame(font, List.of(
                         Component.literal("Give it a Pet Scarf"),
@@ -776,37 +1171,35 @@ public final class PetScreen extends Screen {
             }
             return;
         }
-        Ui.framed(gfx, vx, y - 1, vx + 16, y + 8, 0xFF000000 | d.scarf(), 0xFF0A1020);
+        gfx.fill(vx - 1, y - 1, vx + 17, y + 8, INK);
+        gfx.fill(vx, y, vx + 16, y + 7, 0xFF000000 | d.scarf());
         boolean hot = overTakeOff(mx, my);
         int tx = takeOffX();
-        gfx.text(font, "Take off", tx, y, hot ? Ui.TEXT : Ui.ACCENT, false);
-        if (hot) {
-            gfx.fill(tx, y + 9, tx + font.width("Take off"), y + 10, Ui.TEXT);
-        }
+        gfx.text(font, "Take off", tx, y, hot ? RED_HOT : RED, false);
+        gfx.fill(tx, y + 9, tx + font.width("Take off"), y + 10, hot ? RED_HOT : RED);
     }
 
     private void drawFood(GuiGraphicsExtractor gfx, PetsPacket.Details d, int mx, int my) {
-        int x = infoX();
+        int x = rightX0();
         int y = feedY();
-        gfx.text(font, "Feed", x, y + 5, Ui.FAINT, false);
-        int x0 = x + 30;
+        gfx.text(font, "Feed", x, y + 5, FADED, false);
+        int x0 = feedX();
         List<PetsPacket.Food> foods = d.foods();
         if (foods.isEmpty()) {
-            String text = d.entityId() < 0 ? "Too far away to feed" : "You carry nothing it eats";
-            gfx.text(font, Ui.fit(font, text, infoW() - 30), x0, y + 5, Ui.DIM, false);
+            String text = d.entityId() < 0 ? "Too far away" : "Nothing it eats";
+            gfx.text(font, Ui.fit(font, text, rightX1() - x0), x0, y + 5, FADED, false);
             return;
         }
         int hovered = foodAt(mx, my);
         List<Component> tip = new ArrayList<>();
-        int fits = (infoX() + infoW() - x0 + 2) / (TILE + 2);
-        for (int i = 0; i < foods.size() && i < fits; i++) {
-            int tx = x0 + i * (TILE + 2);
-            boolean hot = i == hovered;
-            Ui.framed(gfx, tx, y, tx + TILE, y + TILE, hot ? Ui.BUTTON_HOVER : Ui.BUTTON, hot ? Ui.ACCENT : Ui.BUTTON_EDGE);
+        for (int i = 0; i < foods.size() && i < foodFits(); i++) {
+            int tx = x0 + i * TILE;
+            gfx.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT, tx, y, TILE, TILE);
             ItemStack stack = stack(foods.get(i));
             gfx.item(stack, tx + 1, y + 1);
             gfx.itemDecorations(font, stack, tx + 1, y + 1);
-            if (hot) {
+            if (i == hovered) {
+                gfx.fill(tx + 1, y + 1, tx + 17, y + 17, 0x80FFFFFF);
                 tip.add(Component.literal("Feed it ").append(stack.getHoverName()));
                 tip.add(Component.literal(!d.near() ? "Too far away. Call it first."
                         : d.hungry() ? "Heals it, or gets it ready to breed" : "It is not hungry"));
@@ -824,46 +1217,52 @@ public final class PetScreen extends Screen {
     }
 
     private void drawGive(GuiGraphicsExtractor gfx, PetsPacket.Pet pet, int mx, int my) {
-        int x = infoX();
-        int w = infoW();
-        int y = nameY();
-        gfx.text(font, "Give", x, y + 2, Ui.DIM, false);
-        gfx.text(font, pet.displayName(), x + font.width("Give ") , y + 2, Ui.TEXT, false);
-        gfx.text(font, "to who? Click a name twice.", x, y + 14, Ui.FAINT, false);
+        int x = rightX0();
+        int w = rightX1() - x;
+        int y = pageTop() + 14;
+        gfx.text(font, Ui.fit(font, "Give " + pet.displayName().getString() + " to", w), x, y, INK, false);
         List<PetsPacket.Person> players = state.players();
         if (players.isEmpty()) {
-            gfx.text(font, "Nobody else is online.", x, personTop() + 3, Ui.DIM, false);
+            gfx.text(font, "Nobody else is online.", x, personTop(), FADED, false);
             return;
         }
+        gfx.text(font, "Click a name twice", x, y + 10, FADED, false);
         int hovered = personAt(mx, my);
-        for (int i = 0; i < players.size() && personTop() + (i + 1) * 16 <= bodyY1(); i++) {
+        for (int i = 0; i < players.size() && personTop() + (i + 1) * ROW <= arrowY(); i++) {
             PetsPacket.Person person = players.get(i);
-            int ry = personTop() + i * 16;
+            int ry = personTop() + i * ROW;
             boolean armed = person.id().equals(armedPlayer);
-            if (armed) {
-                gfx.fill(x, ry, x + w, ry + 14, Ui.ACCENT);
-            } else {
-                Ui.framed(gfx, x, ry, x + w, ry + 14, i == hovered ? Ui.BUTTON_HOVER : Ui.BUTTON, Ui.BUTTON_EDGE);
+            if (i == hovered || armed) {
+                gfx.fill(x - 2, ry - 2, rightX1() + 2, ry + ROW - 2, HOVER);
             }
-            String label = armed ? "Click again to give it to " + person.name() : person.name();
-            gfx.text(font, Ui.fit(font, label, w - 10), x + 5, ry + 3, armed ? Ui.ACCENT_TEXT : Ui.TEXT, false);
+            String label = armed ? "Again to give: " + person.name() : person.name();
+            gfx.text(font, Ui.fit(font, label, w), x, ry, armed ? RED : INK, false);
         }
     }
 
-    /** The last answer from the server, as a small box under the menu that fades out. */
+    /** The last answer from the server, under the buttons, fading out. */
     private void drawNotice(GuiGraphicsExtractor gfx) {
         long age = System.currentTimeMillis() - noticeAt;
         if (notice.isEmpty() || age > NOTICE_MS) {
             return;
         }
         float alpha = age > NOTICE_MS - 500 ? (NOTICE_MS - age) / 500f : 1f;
-        String text = Ui.fit(font, notice, cardW() - 24);
-        int w = font.width(text) + 16;
-        int x0 = (width - w) / 2;
-        int y0 = Math.min(height - 16, bottom() + 6);
-        Ui.framed(gfx, x0, y0, x0 + w, y0 + 14, Ui.fade(0xF00B1424, alpha), Ui.fade(Ui.PANEL_EDGE, alpha));
-        gfx.fill(x0 + 4, y0 + 5, x0 + 7, y0 + 8, Ui.fade(noticeOk ? Ui.GOOD : Ui.BAD, alpha));
-        gfx.text(font, text, x0 + 11, y0 + 3, Ui.fade(Ui.TEXT, alpha), false);
+        String text = Ui.fit(font, notice, BOOK_W);
+        int y = Math.min(height - 10, buttonY() + BUTTON_H + 4);
+        gfx.text(font, text, (width - font.width(text)) / 2, y, Ui.fade(0xFFFFFFFF, alpha), true);
+    }
+
+    private Entity entity() {
+        Minecraft minecraft = Minecraft.getInstance();
+        int id = state.details().entityId();
+        return id < 0 || minecraft.level == null ? null : minecraft.level.getEntity(id);
+    }
+
+    /** Fits the pet in the box, tall or long. */
+    private static int previewSize(LivingEntity entity, int boxW, int boxH) {
+        float byHeight = (boxH - 8) / Math.max(0.4f, entity.getBbHeight());
+        float byWidth = (boxW - 12) / Math.max(0.4f, entity.getBbWidth() * 1.6f);
+        return Math.round(Math.clamp(Math.min(byHeight, byWidth), 10f, 60f));
     }
 
     private static ItemStack icon(PetsPacket.Pet pet) {

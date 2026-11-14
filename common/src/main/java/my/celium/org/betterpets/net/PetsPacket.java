@@ -20,7 +20,8 @@ import net.minecraft.resources.Identifier;
  * a second and after every action.
  */
 public record PetsPacket(boolean open, UUID selected, List<Pet> pets, Details details, List<Person> players,
-        String notice, boolean noticeOk, boolean allowCall, boolean allowRename, boolean allowGive)
+        String notice, boolean noticeOk, boolean allowCall, boolean allowRename, boolean allowGive,
+        List<Setting> settings, boolean canEditSettings)
         implements CustomPacketPayload {
     public static final Type<PetsPacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath(BetterPetsMod.ID, "pets"));
     public static final StreamCodec<FriendlyByteBuf, PetsPacket> CODEC = StreamCodec.of(PetsPacket::write, PetsPacket::read);
@@ -44,6 +45,13 @@ public record PetsPacket(boolean open, UUID selected, List<Pet> pets, Details de
 
     /** One kind of food the player carries for the selected pet, with the slot to take it from. */
     public record Food(int slot, String item, int count) {
+    }
+
+    /**
+     * One of the mod's server options, for the settings page. {@code number} tells a whole number
+     * ({@code value} between {@code min} and {@code max}) from an on/off switch ({@code value} 0 or 1).
+     */
+    public record Setting(String key, String description, boolean number, int value, int min, int max) {
     }
 
     /** Another online player to give a pet to. */
@@ -107,6 +115,15 @@ public record PetsPacket(boolean open, UUID selected, List<Pet> pets, Details de
         buf.writeBoolean(p.allowCall);
         buf.writeBoolean(p.allowRename);
         buf.writeBoolean(p.allowGive);
+        list(buf, p.settings, (b, setting) -> {
+            b.writeUtf(setting.key);
+            b.writeUtf(setting.description);
+            b.writeBoolean(setting.number);
+            b.writeVarInt(setting.value);
+            b.writeVarInt(setting.min);
+            b.writeVarInt(setting.max);
+        });
+        buf.writeBoolean(p.canEditSettings);
     }
 
     private static PetsPacket read(FriendlyByteBuf buf) {
@@ -119,8 +136,15 @@ public record PetsPacket(boolean open, UUID selected, List<Pet> pets, Details de
                 buf.readUtf(), buf.readUtf(), list(buf, b -> new Food(b.readVarInt(), b.readUtf(), b.readVarInt())),
                 buf.readInt(), buf.readBoolean());
         List<Person> players = list(buf, b -> new Person(b.readUUID(), b.readUtf()));
-        return new PetsPacket(open, selected, pets, details, players, buf.readUtf(), buf.readBoolean(),
-                buf.readBoolean(), buf.readBoolean(), buf.readBoolean());
+        String notice = buf.readUtf();
+        boolean noticeOk = buf.readBoolean();
+        boolean allowCall = buf.readBoolean();
+        boolean allowRename = buf.readBoolean();
+        boolean allowGive = buf.readBoolean();
+        List<Setting> settings = list(buf, b -> new Setting(b.readUtf(), b.readUtf(), b.readBoolean(), b.readVarInt(),
+                b.readVarInt(), b.readVarInt()));
+        return new PetsPacket(open, selected, pets, details, players, notice, noticeOk, allowCall, allowRename,
+                allowGive, settings, buf.readBoolean());
     }
 
     private static <T> void list(FriendlyByteBuf buf, List<T> values, BiConsumer<FriendlyByteBuf, T> writer) {

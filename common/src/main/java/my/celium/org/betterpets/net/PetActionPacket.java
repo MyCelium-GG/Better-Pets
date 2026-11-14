@@ -12,7 +12,8 @@ import net.minecraft.resources.Identifier;
 /**
  * Client to server: a button on the pet screen. {@code slot} is the food's
  * inventory slot for {@link Action#FEED}; {@code text} the new name for
- * {@link Action#RENAME}, the receiving player's UUID for {@link Action#GIVE}.
+ * {@link Action#RENAME}, the receiving player's UUID for {@link Action#GIVE}, {@code key=value} for
+ * {@link Action#SETTING}.
  * The server checks all of it again.
  */
 public record PetActionPacket(Action action, UUID pet, int slot, String text) implements CustomPacketPayload {
@@ -30,6 +31,8 @@ public record PetActionPacket(Action action, UUID pet, int slot, String text) im
 
     /** What the button does. */
     public enum Action {
+        /** Changes one of the mod's options ({@code text} is key=value); operators only. */
+        SETTING,
         /** The screen arrived: this client has the mod. */
         OPENED,
         CLOSED,

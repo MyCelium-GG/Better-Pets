@@ -1,5 +1,8 @@
 package my.celium.org.betterpets;
 
+import my.celium.org.config.ConfigValue;
+import net.minecraft.server.permissions.Permission;
+import net.minecraft.server.permissions.PermissionLevel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -218,6 +221,9 @@ public final class PetPanel {
             case GIVE -> {
                 return give(player, pet, packet.text());
             }
+            case SETTING -> {
+                return setting(player, packet.text());
+            }
             case SCARF_OFF -> {
                 if (!PetCare.isNear(player, entity)) {
                     return Result.fail(name + " is too far away. Call it first.");
@@ -283,7 +289,52 @@ public final class PetPanel {
         }
         MycelNetwork.sendToPlayer(player, pets, new PetsPacket(open, selected.id, rows, details(player, selected),
                 people, notice, ok, BetterPetsMod.allowCall.get(), BetterPetsMod.allowRename.get(),
-                BetterPetsMod.allowGive.get()));
+                BetterPetsMod.allowGive.get(), settings(), canEditSettings(player)));
+    }
+
+    /** The mod's options as the settings page shows them. */
+    private static List<PetsPacket.Setting> settings() {
+        List<PetsPacket.Setting> out = new ArrayList<>();
+        if (BetterPetsMod.config == null) {
+            return out;
+        }
+        for (ConfigValue<?> value : BetterPetsMod.config.values()) {
+            if (value instanceof ConfigValue.BooleanValue b) {
+                out.add(new PetsPacket.Setting(b.key(), b.description(), false, b.get() ? 1 : 0, 0, 1));
+            } else if (value instanceof ConfigValue.IntegerValue i) {
+                out.add(new PetsPacket.Setting(i.key(), i.description(), true, i.get(), i.min(), i.max()));
+            }
+        }
+        return out;
+    }
+
+    /** Operators, and the player who owns a singleplayer world, may change the options. */
+    static boolean canEditSettings(ServerPlayer player) {
+        var server = player.level().getServer();
+        return server.isSingleplayerOwner(player.nameAndId())
+                || player.permissions().hasPermission(new Permission.HasCommandLevel(PermissionLevel.byId(2)));
+    }
+
+    private static Result setting(ServerPlayer player, String text) {
+        if (!canEditSettings(player)) {
+            return Result.fail("Only operators can change the settings.");
+        }
+        int eq = text.indexOf('=');
+        ConfigValue<?> value = eq < 0 || BetterPetsMod.config == null ? null : BetterPetsMod.config.find(text.substring(0, eq));
+        String raw = eq < 0 ? "" : text.substring(eq + 1);
+        try {
+            if (value instanceof ConfigValue.BooleanValue b) {
+                b.set(Boolean.parseBoolean(raw));
+            } else if (value instanceof ConfigValue.IntegerValue i) {
+                i.set(Math.clamp(Integer.parseInt(raw), i.min(), i.max()));
+            } else {
+                return Result.fail("Unknown setting.");
+            }
+        } catch (NumberFormatException e) {
+            return Result.fail("That is not a number.");
+        }
+        BetterPetsMod.config.save();
+        return Result.ok("Saved.");
     }
 
     private static PetsPacket.Pet row(ServerPlayer player, PetRecord pet) {
