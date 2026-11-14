@@ -67,6 +67,8 @@ public final class PetScreen extends Screen {
     private static final int SETTINGS_ROW = 11;
     private static final int GEAR_W = 15;
     private static final int GEAR_H = 10;
+    private static final int SWATCH_W = 18;
+    private static final int SWATCH_STEP = 23;
     private static final int ROW = 12;
     private static final int LABEL_W = 46;
     private static final int TILE = 18;
@@ -605,6 +607,9 @@ public final class PetScreen extends Screen {
 
     @Override
     public void extractRenderState(GuiGraphicsExtractor gfx, int mouseX, int mouseY, float a) {
+        if (BookStyle.current().winter()) {
+            Winter.snowfall(gfx, width, height);
+        }
         drawBook(gfx);
         if (settingsOpen) {
             // Only the closed-looking book behind the settings: its text would show through the shade.
@@ -655,6 +660,11 @@ public final class PetScreen extends Screen {
         }
         gfx.fill(mid - 1, y + 5, mid + 1, y + PAGE_H - 4, 0xFF000000 | brighten(style.swatch() & 0xFFFFFF, 0.55f));
         drawRibbon(gfx, style, false);
+        if (style.winter()) {
+            Winter.icicles(gfx, x + 3, x + BOOK_W - 3, y + PAGE_H - 1, ribbonX());
+            Winter.snowCap(gfx, x + 1, x + BOOK_W - 1, y + 2);
+            Winter.holly(gfx, x + BOOK_W - 18, y - 3);
+        }
     }
 
     private int ribbonX() {
@@ -732,6 +742,9 @@ public final class PetScreen extends Screen {
                 }
             }
         }
+        if (BookStyle.current().winter()) {
+            Winter.snowCap(gfx, x, x + GEAR_W, y + 1);
+        }
         if (hot) {
             gfx.setTooltipForNextFrame(font, Component.literal("Settings"), mx, my);
         }
@@ -804,8 +817,8 @@ public final class PetScreen extends Screen {
             return -1;
         }
         for (int i = 0; i < BookStyle.values().length; i++) {
-            int x = panelX0() + i * 26;
-            if (mx >= x && mx < x + 22) {
+            int x = panelX0() + i * SWATCH_STEP;
+            if (mx >= x && mx < x + SWATCH_W) {
                 return i;
             }
         }
@@ -869,6 +882,10 @@ public final class PetScreen extends Screen {
         int y = panelY();
         gfx.blit(style.texture(), x, y, x + panelW(), y + PAGE_H, 20 / 256f, 166 / 256f, PAGE_V / 256f,
                 (PAGE_V + PAGE_H) / 256f);
+        if (style.winter()) {
+            Winter.snowCap(gfx, x + 1, x + panelW() - 1, y + 2);
+            Winter.icicles(gfx, x + 3, x + panelW() - 3, y + PAGE_H - 1, -100);
+        }
         int x0 = panelX0();
         int x1 = panelX1();
         centered(gfx, Component.literal("Settings").withStyle(Style.EMPTY.withBold(true)), x0, x1, y + 14, INK);
@@ -878,16 +895,19 @@ public final class PetScreen extends Screen {
         int hovered = swatchAt(mx, my);
         BookStyle[] styles = BookStyle.values();
         for (int i = 0; i < styles.length; i++) {
-            int sx = x0 + i * 26;
+            int sx = x0 + i * SWATCH_STEP;
             int sy = swatchY();
             boolean on = styles[i] == style;
-            gfx.fill(sx - 1, sy - 1, sx + 23, sy + 13, on ? INK : (i == hovered ? FADED : 0x30553F28));
-            gfx.fill(sx, sy, sx + 22, sy + 12, styles[i].swatch());
+            gfx.fill(sx - 1, sy - 1, sx + SWATCH_W + 1, sy + 13, on ? INK : (i == hovered ? FADED : 0x30553F28));
+            gfx.fill(sx, sy, sx + SWATCH_W, sy + 12, styles[i].swatch());
             if (styles[i].ribbon != 0) {
-                gfx.fill(sx + 16, sy, sx + 19, sy + 12, 0xFF000000 | styles[i].ribbon);
+                gfx.fill(sx + SWATCH_W - 6, sy, sx + SWATCH_W - 3, sy + 12, 0xFF000000 | styles[i].ribbon);
+            }
+            if (styles[i].winter()) {
+                Winter.snowCap(gfx, sx, sx + SWATCH_W, sy + 1);
             }
             if (on) {
-                gfx.fill(sx + 2, sy + 14, sx + 20, sy + 15, INK);
+                gfx.fill(sx + 2, sy + 14, sx + SWATCH_W - 2, sy + 15, INK);
             }
             if (i == hovered) {
                 gfx.setTooltipForNextFrame(font, Component.literal(styles[i].label), mx, my);
