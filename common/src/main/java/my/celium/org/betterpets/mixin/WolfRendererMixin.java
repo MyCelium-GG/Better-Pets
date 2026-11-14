@@ -13,6 +13,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class WolfRendererMixin {
     @Inject(method = "<init>", at = @At("TAIL"))
     private void betterpets$addWinterLayer(EntityRendererProvider.Context context, CallbackInfo ci) {
+        if (!my.celium.org.betterpets.PetGate.on()) {
+            return;
+        }
         WolfRenderer self = (WolfRenderer) (Object) this;
         ((LivingEntityRendererAccessor) self).betterpets$addLayer(new WolfWinterLayer(self));
     }

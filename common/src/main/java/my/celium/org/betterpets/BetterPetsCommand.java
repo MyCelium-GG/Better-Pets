@@ -126,7 +126,8 @@ public final class BetterPetsCommand {
     }
 
     private static MutableComponent state(boolean on) {
-        return on ? TextUtil.hex("on", TextUtil.SUCCESS) : TextUtil.hex("off", TextUtil.ERROR);
+        return on ? TextUtil.hex("on", TextUtil.BRIGHT).withStyle(style -> style.withBold(true))
+                : TextUtil.hex("off", TextUtil.FAINT);
     }
 
     // ---------------------------------------------------------------- the pet book
@@ -169,7 +170,7 @@ public final class BetterPetsCommand {
         if (before.equals(after)) {
             CommandHelper.success(source, VOICE.note(ConfigStrings.pathOf(value) + " is already " + after + "."));
         } else {
-            CommandHelper.success(source, VOICE.ok(ConfigStrings.pathOf(value) + " is now ",
+            CommandHelper.success(source, VOICE.note(ConfigStrings.pathOf(value) + " is now ",
                     TextUtil.hex(after, TextUtil.ACCENT), TextUtil.muted("   was " + before)));
         }
         return 1;
@@ -184,7 +185,7 @@ public final class BetterPetsCommand {
         value.reset();
         BetterPetsMod.config.save();
         PetStats.count("command_reset");
-        CommandHelper.success(source, VOICE.ok(ConfigStrings.pathOf(value) + " is back to ",
+        CommandHelper.success(source, VOICE.note(ConfigStrings.pathOf(value) + " is back to ",
                 TextUtil.hex(ConfigStrings.valueToString(value), TextUtil.ACCENT), "."));
         return 1;
     }
@@ -193,14 +194,14 @@ public final class BetterPetsCommand {
         BetterPetsMod.config.resetAll();
         BetterPetsMod.config.save();
         PetStats.count("command_reset");
-        CommandHelper.success(context.getSource(), VOICE.ok("Every setting is back to its default."));
+        CommandHelper.success(context.getSource(), VOICE.note("Every setting is back to its default."));
         return 1;
     }
 
     private static int reload(CommandContext<CommandSourceStack> context) {
         BetterPetsMod.config.reload();
         PetStats.count("command_reload");
-        CommandHelper.success(context.getSource(), VOICE.ok("Read the settings again from "
+        CommandHelper.success(context.getSource(), VOICE.note("Read the settings again from "
                 + BetterPetsMod.config.file().getFileName() + "."));
         return 1;
     }

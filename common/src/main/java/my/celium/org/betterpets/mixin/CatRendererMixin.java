@@ -13,6 +13,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class CatRendererMixin {
     @Inject(method = "<init>", at = @At("TAIL"))
     private void betterpets$addWinterLayer(EntityRendererProvider.Context context, CallbackInfo ci) {
+        if (!my.celium.org.betterpets.PetGate.on()) {
+            return;
+        }
         CatRenderer self = (CatRenderer) (Object) this;
         ((LivingEntityRendererAccessor) self).betterpets$addLayer(new CatWinterLayer(self));
     }

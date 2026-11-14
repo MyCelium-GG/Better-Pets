@@ -18,6 +18,9 @@ abstract class PlayerMixin {
     @Inject(method = "interactOn", at = @At("HEAD"), cancellable = true)
     private void betterpets$openMenu(Entity entity, InteractionHand hand, Vec3 location,
             CallbackInfoReturnable<InteractionResult> result) {
+        if (!my.celium.org.betterpets.PetGate.on()) {
+            return;
+        }
         if (BetterPetsMod.onInteract((Player) (Object) this, entity, hand == InteractionHand.MAIN_HAND)) {
             result.setReturnValue(InteractionResult.SUCCESS);
         }

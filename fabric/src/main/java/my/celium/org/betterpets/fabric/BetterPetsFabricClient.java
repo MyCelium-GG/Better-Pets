@@ -1,12 +1,14 @@
 package my.celium.org.betterpets.fabric;
 
-import my.celium.org.fabric.FabricNetworking;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.loader.api.FabricLoader;
 
-/** Fabric client entrypoint: the pet screen's packets. */
+/** Fabric client entrypoint: the pet screen's packets (only with Mycel installed). */
 public final class BetterPetsFabricClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
-        FabricNetworking.flushClient();
+        if (FabricLoader.getInstance().isModLoaded("mycel")) {
+            FabricClientSetup.start();
+        }
     }
 }

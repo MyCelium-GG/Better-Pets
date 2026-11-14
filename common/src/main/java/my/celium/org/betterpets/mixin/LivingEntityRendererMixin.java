@@ -18,6 +18,9 @@ public abstract class LivingEntityRendererMixin {
             at = @At("TAIL"))
     private void betterpets$extractLook(LivingEntity entity, LivingEntityRenderState state, float partialTicks,
             CallbackInfo ci) {
+        if (!my.celium.org.betterpets.PetGate.on()) {
+            return;
+        }
         if (state instanceof PetLookState look) {
             PetLooksPacket.Look known = ClientLooks.get(entity.getId());
             if (known == null) {
