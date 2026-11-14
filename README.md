@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/35a2fc72c7be/docs/img/banners/header.svg" alt="Better Pets" width="100%">
+  <img src="https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/86b553712e6c/docs/img/banners/header.svg" alt="Better Pets" width="100%">
 </p>
 
 <p align="center">
@@ -15,32 +15,34 @@
 
 <a href="https://www.curseforge.com/minecraft/mc-mods/mycel"><img src="https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/3d7178a5f964/docs/img/banners/mycel-required.svg" alt="Mycel is required: this mod needs the Mycel library to run. Install Mycel next to it, for the same Minecraft version and loader. Download it from CurseForge." width="100%"></a>
 
-![About the mod](https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/35a2fc72c7be/docs/img/banners/about-the-mod.svg)
+![About the mod](https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/86b553712e6c/docs/img/banners/about-the-mod.svg)
 
-<img src="https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/35a2fc72c7be/docs/img/banners/about.svg" alt="Better Pets Owning a dog, cat, parrot or horse, done right. /pets lists every pet you own and where it is - even in unloaded chunks. Find one with a glow and an on-screen arrow, call it to you, rename it without a name tag, give it to a friend. Your own sword no longer hurts your pets, a lead on your pet never snaps, and when a pet dies you get the exact spot. Shift-right-click a pet for a full menu. The winter update adds knitted Pet Scarves, dogs that sleep on your bed and snowy coats. Install it on the server and on every client." width="100%">
+<img src="https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/86b553712e6c/docs/img/banners/about.svg" alt="Better Pets Owning a dog, cat, parrot or horse, done right. /pets lists every pet you own and where it is - even in unloaded chunks. Find one with a glow and an on-screen arrow, call it to you, rename it without a name tag, give it to a friend. Your own sword no longer hurts your pets, a lead on your pet never snaps, and when a pet dies you get the exact spot. Shift-right-click a pet to open its page in your pet book. Install it on the server and on every client." width="100%">
 
-![Winter update](https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/35a2fc72c7be/docs/img/banners/winter-update.svg)
+![The pet book](https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/86b553712e6c/docs/img/banners/the-pet-book.svg)
 
-<img src="https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/35a2fc72c7be/docs/img/banners/winter-update-box.svg" alt="Pet Scarf: Craft it from 3 wool and a string, dye it any colour, then right-click your own dog or cat with it. It sits around the neck with an end hanging down and moves with the pet. Take it off from the pet menu; it drops if the pet dies. Sleep on your bed: When you go to bed, your dogs come and lie down on the end of it, the rest on the floor next to it. Dogs you told to sit stay where they are" width="100%">
+<img src="https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/86b553712e6c/docs/img/banners/the-pet-book-box.svg" alt="Shift-right-click your pet, or use /pets menu or /betterpets menu. Every pet has its own page: its name, the pet itself, hearts, what it is doing, where it is, its scarf and the food you carry. The first page lists all your pets. Turn pages with the arrows, the arrow keys or the mouse wheel. Five covers: Winter (snow, icicles, holly and falling snow, on by default from 15 November to 15 January), " width="100%">
 
-![Dogs and cats in knitted scarves, one lying at the foot of a bed](https://wiki.mycelium-gg.org/betterpets/img/winter-scarves.png)
-
-**1.4.0, the pet book:** your pets live in a book now, one page per pet, in five covers including a snowy Winter one, with the settings inside the book and a new `/betterpets` command.
-
-![The pet book in its Winter cover: Rex the wolf in a red scarf on the left page, his hearts, whereabouts, scarf and food on the right](https://wiki.mycelium-gg.org/betterpets/img/menu.png)
+![The pet book in its Winter cover: Rex the wolf in a red scarf on the left page, his hearts, whereabouts, scarf and food on the right](https://wiki.mycelium-gg.org/betterpets/img/book-page.png)
 
 ![The same page of the pet book in five covers: Winter, Midnight, Forest, Leather and Classic](https://wiki.mycelium-gg.org/betterpets/img/book-covers.png)
 
-![Behavior](https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/35a2fc72c7be/docs/img/banners/behavior.svg)
+![Winter update](https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/86b553712e6c/docs/img/banners/winter-update.svg)
 
-<img src="https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/35a2fc72c7be/docs/img/banners/behavior-box.svg" alt="Every tamed animal with an owner counts as a pet: wolves, cats, parrots, horses, donkeys, mules, llamas, camels, nautiluses and modded tamables. /pets: Lists them all, one line each: Pets » Your pets - 3 › 1 Rex ♥ 40/40 · 7 m E Menu Find Call Name › 2 Luna ♥ 10/10 · 5.7 km NW (2 h ago) Menu Find Call Name › 3 Parrot · died 5 min ago · 12 m N Forget Hover a name for the species and health, hover th" width="100%">
+<img src="https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/86b553712e6c/docs/img/banners/winter-update-box.svg" alt="Pet Scarf: Craft it from 3 wool and a string, dye it any colour, then right-click your own dog or cat with it. It sits around the neck and moves with the pet. Take it off from the pet book; it drops if the pet dies. Sleep on your bed: When you go to bed, your dogs come and lie down on the end of it. Dogs you told to sit stay where they are. Snowy coats: Dogs and cats out in falling snow turn white" width="100%">
 
-![Anonymous stats](https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/35a2fc72c7be/docs/img/banners/anonymous-stats.svg)
+![Dogs and cats in knitted scarves, one lying at the foot of a bed](https://wiki.mycelium-gg.org/betterpets/img/winter-scarves.png)
 
-<img src="https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/35a2fc72c7be/docs/img/banners/anonymous-stats-box.svg" alt="Better Pets sends anonymous stats (pet counts, species, which features get used, and errors in its own code) to its FastStats project through Mycel. It follows Mycel's choice exactly: the one-time screen in your own game, shareStats / shareErrors in config/mycel.json on servers." width="100%">
+![Behavior](https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/86b553712e6c/docs/img/banners/behavior.svg)
 
-![Configuration](https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/35a2fc72c7be/docs/img/banners/configuration.svg)
+<img src="https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/86b553712e6c/docs/img/banners/behavior-box.svg" alt="Every tamed animal with an owner counts as a pet: wolves, cats, parrots, horses, donkeys, mules, llamas, camels, nautiluses and modded tamables. /pets: Lists them all, one line each, with health, distance and buttons. Pets in unloaded chunks keep their last known spot (&quot;2 h ago&quot;). /pets find <pet>: Makes the pet glow for 30 s and shows an arrow with the distance above the hotbar. /pets call <pet>:" width="100%">
 
-<img src="https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/35a2fc72c7be/docs/img/banners/configuration-table.svg" alt="Configuration table: enabled, true, Master switch (also toggleable live via Mycel.setEnabled).; petMenu, true, Shift-right-clicking your pet and /pets menu open its menu.; protectFromOwner, true, Owners cannot hurt their own pets unless sneaking.; strongLeads, true, Pets on their owner's lead are pulled along instead of snapping off.; deathAlerts, true, Tell the owner where a pet died.; allowCall, true, Allow /pets ca" width="100%">
+![Anonymous stats](https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/86b553712e6c/docs/img/banners/anonymous-stats.svg)
 
-<img src="https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/35a2fc72c7be/docs/img/banners/configuration-box.svg" alt="Reload live with /mycel reload betterpets. A config screen is available from the mod list on Forge and NeoForge." width="100%">
+<img src="https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/86b553712e6c/docs/img/banners/anonymous-stats-box.svg" alt="Better Pets sends anonymous stats (pet counts, species, which features get used, and errors in its own code) to its FastStats project through Mycel. It follows Mycel's choice exactly: the one-time screen in your own game, shareStats / shareErrors in config/mycel.json on servers." width="100%">
+
+![Configuration](https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/86b553712e6c/docs/img/banners/configuration.svg)
+
+<img src="https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/86b553712e6c/docs/img/banners/configuration-table.svg" alt="Configuration table: enabled, true, Master switch.; petMenu, true, Shift-right-clicking your pet and /pets menu open the pet book.; protectFromOwner, true, Owners cannot hurt their own pets unless sneaking.; strongLeads, true, Pets on their owner's lead are pulled along instead of snapping off.; deathAlerts, true, Tell the owner where a pet died.; allowCall, true, Allow /pets call.; callCooldownSeconds, 30, Seconds be" width="100%">
+
+<img src="https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/86b553712e6c/docs/img/banners/configuration-box.svg" alt="Change them in game: the gear tab in the pet book, or /betterpets (operators)." width="100%">

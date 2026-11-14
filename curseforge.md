@@ -6,7 +6,7 @@ Owning a dog, cat, parrot or horse, done right. `/pets` lists every pet you own 
 
 **Winter update:** knit your dog or cat a scarf in any colour, watch your dogs curl up on the end of your bed at night, and see them come in from the snow all white and shake it off.
 
-![The pet book in its Winter cover: Rex the wolf in a red scarf on the left page, his hearts, whereabouts, scarf and food on the right](https://wiki.mycelium-gg.org/betterpets/img/menu.png)
+![The pet book in its Winter cover: Rex the wolf in a red scarf on the left page, his hearts, whereabouts, scarf and food on the right](https://wiki.mycelium-gg.org/betterpets/img/book-page.png)
 
 ![The same page of the pet book in five covers: Winter, Midnight, Forest, Leather and Classic](https://wiki.mycelium-gg.org/betterpets/img/book-covers.png)
 
