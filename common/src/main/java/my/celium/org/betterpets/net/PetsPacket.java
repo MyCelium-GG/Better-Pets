@@ -21,7 +21,7 @@ import net.minecraft.resources.Identifier;
  */
 public record PetsPacket(boolean open, UUID selected, List<Pet> pets, Details details, List<Person> players,
         String notice, boolean noticeOk, boolean allowCall, boolean allowRename, boolean allowGive,
-        List<Setting> settings, boolean canEditSettings)
+        List<Setting> settings, boolean canEditSettings, boolean showSettings)
         implements CustomPacketPayload {
     public static final Type<PetsPacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath(BetterPetsMod.ID, "pets"));
     public static final StreamCodec<FriendlyByteBuf, PetsPacket> CODEC = StreamCodec.of(PetsPacket::write, PetsPacket::read);
@@ -124,6 +124,7 @@ public record PetsPacket(boolean open, UUID selected, List<Pet> pets, Details de
             b.writeVarInt(setting.max);
         });
         buf.writeBoolean(p.canEditSettings);
+        buf.writeBoolean(p.showSettings);
     }
 
     private static PetsPacket read(FriendlyByteBuf buf) {
@@ -144,7 +145,7 @@ public record PetsPacket(boolean open, UUID selected, List<Pet> pets, Details de
         List<Setting> settings = list(buf, b -> new Setting(b.readUtf(), b.readUtf(), b.readBoolean(), b.readVarInt(),
                 b.readVarInt(), b.readVarInt()));
         return new PetsPacket(open, selected, pets, details, players, notice, noticeOk, allowCall, allowRename,
-                allowGive, settings, buf.readBoolean());
+                allowGive, settings, buf.readBoolean(), buf.readBoolean());
     }
 
     private static <T> void list(FriendlyByteBuf buf, List<T> values, BiConsumer<FriendlyByteBuf, T> writer) {

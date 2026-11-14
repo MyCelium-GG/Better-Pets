@@ -181,7 +181,11 @@ public final class PetsCommand {
     // ---------------------------------------------------------------- actions
 
     private static int menu(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
-        ServerPlayer player = context.getSource().getPlayerOrException();
+        return openMenu(context.getSource().getPlayerOrException());
+    }
+
+    /** Opens the pet book (or tells the player why not); shared with /betterpets menu. */
+    static int openMenu(ServerPlayer player) {
         if (!menuEnabled(player)) {
             return 0;
         }

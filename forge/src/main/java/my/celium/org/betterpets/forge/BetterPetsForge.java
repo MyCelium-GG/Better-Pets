@@ -26,7 +26,10 @@ public final class BetterPetsForge {
     public BetterPetsForge(@SuppressWarnings("unused") FMLJavaModLoadingContext context) {
         BetterPetsMod.init();
         TickEvent.ServerTickEvent.Post.BUS.addListener(event -> BetterPetsMod.tickServer(event.server()));
-        RegisterCommandsEvent.BUS.addListener(event -> PetsCommand.register(event.getDispatcher()));
+        RegisterCommandsEvent.BUS.addListener(event -> {
+            PetsCommand.register(event.getDispatcher());
+            my.celium.org.betterpets.BetterPetsCommand.register(event.getDispatcher());
+        });
         LivingAttackEvent.BUS.addListener(
                 (LivingAttackEvent event) -> BetterPetsMod.shouldBlockDamage(event.getEntity(), event.getSource()));
         AttackEntityEvent.BUS.addListener(

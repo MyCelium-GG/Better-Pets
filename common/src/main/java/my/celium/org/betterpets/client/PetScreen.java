@@ -737,6 +737,17 @@ public final class PetScreen extends Screen {
         }
     }
 
+    /** Opens on (or switches to) the settings page; used by /betterpets settings. */
+    void showSettings() {
+        settingsOpen = true;
+        settingsScroll = 0;
+        if (nameBox != null) {
+            stopRenaming();
+            giving = false;
+            sync();
+        }
+    }
+
     private void openSettings() {
         settingsOpen = true;
         settingsScroll = 0;

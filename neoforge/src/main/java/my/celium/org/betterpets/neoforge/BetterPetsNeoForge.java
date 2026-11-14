@@ -29,7 +29,10 @@ public final class BetterPetsNeoForge {
             @SuppressWarnings("unused") ModContainer container) {
         BetterPetsMod.init();
         NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> BetterPetsMod.tickServer(event.getServer()));
-        NeoForge.EVENT_BUS.addListener((RegisterCommandsEvent event) -> PetsCommand.register(event.getDispatcher()));
+        NeoForge.EVENT_BUS.addListener((RegisterCommandsEvent event) -> {
+            PetsCommand.register(event.getDispatcher());
+            my.celium.org.betterpets.BetterPetsCommand.register(event.getDispatcher());
+        });
         NeoForge.EVENT_BUS.addListener((LivingIncomingDamageEvent event) -> {
             if (BetterPetsMod.shouldBlockDamage(event.getEntity(), event.getSource())) {
                 event.setCanceled(true);
