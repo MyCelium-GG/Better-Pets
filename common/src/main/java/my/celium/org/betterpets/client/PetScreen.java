@@ -925,7 +925,7 @@ public final class PetScreen extends Screen {
             } else {
                 String word = setting.value() != 0 ? "On" : "Off";
                 valueW = font.width("Off");
-                int color = !canEdit ? FADED : setting.value() != 0 ? 0xFF2F6B2A : RED;
+                int color = !canEdit || setting.value() == 0 ? FADED : INK;
                 gfx.text(font, word, x1 - font.width(word), ry, color, false);
             }
             gfx.text(font, Ui.fit(font, label(setting.key()), x1 - x0 - valueW - 4), x0, ry, canEdit ? INK : FADED, false);

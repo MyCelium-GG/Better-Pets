@@ -29,6 +29,9 @@ public abstract class CreativeModeTabMixin {
 
     @Inject(method = "buildContents", at = @At("TAIL"))
     private void betterpets$addItems(CreativeModeTab.ItemDisplayParameters parameters, CallbackInfo ci) {
+        if (!my.celium.org.betterpets.PetGate.on()) {
+            return;
+        }
         Identifier id = BuiltInRegistries.CREATIVE_MODE_TAB.getKey((CreativeModeTab) (Object) this);
         if (id == null || !id.getNamespace().equals("minecraft") || !id.getPath().equals("tools_and_utilities")) {
             return;

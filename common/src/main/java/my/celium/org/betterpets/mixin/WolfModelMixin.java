@@ -43,6 +43,9 @@ public abstract class WolfModelMixin {
 
     @Inject(method = "setupAnim(Lnet/minecraft/client/renderer/entity/state/WolfRenderState;)V", at = @At("TAIL"))
     private void betterpets$lieDown(WolfRenderState state, CallbackInfo ci) {
+        if (!my.celium.org.betterpets.PetGate.on()) {
+            return;
+        }
         if (state.isSitting || !(state instanceof PetLookState look) || !look.betterpets$asleep()) {
             return;
         }

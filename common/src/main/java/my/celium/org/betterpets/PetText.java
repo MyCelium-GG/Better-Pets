@@ -18,7 +18,8 @@ public final class PetText {
     static final int NAME = TextUtil.BRIGHT;
     static final int VALUE = TextUtil.INFO;
     static final int BUTTON = TextUtil.ACCENT;
-    static final int GOOD = TextUtil.SUCCESS;
+    /** Good news is plain bright text: the red tag is the only colour in our messages. */
+    static final int GOOD = TextUtil.BRIGHT;
     static final int DEAD = TextUtil.ERROR;
     static final int HEART = TextUtil.PRIMARY;
     /** Brackets, separators, list numbers. */
@@ -58,7 +59,7 @@ public final class PetText {
 
     /** Success line: {@code Pets » message}. */
     public static MutableComponent ok(Object... parts) {
-        return VOICE.ok(parts);
+        return VOICE.note(parts);
     }
 
     /** Error line: rose text. */
