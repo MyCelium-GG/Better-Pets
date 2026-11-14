@@ -25,7 +25,9 @@ public enum BookStyle {
     MIDNIGHT("Midnight", 0.62f, 0.45f, 1.05f, 0xE2B848, 0xB22228),
     FOREST("Forest", 0.35f, 0.40f, 1.0f, 0xEEE2C4, 0xD6A83A),
     LEATHER("Leather", 0.04f, 0.55f, 1.0f, 0xE2B848, 0xB22228),
-    CLASSIC("Classic", -1f, 0f, 1f, 0, 0);
+    CLASSIC("Classic", -1f, 0f, 1f, 0, 0),
+    /** Frosty ice-blue leather; the screen adds snow, icicles, holly and falling snow. */
+    WINTER("Winter", 0.57f, 0.38f, 1.9f, 0xE6EEF6, 0xC0262E);
 
     static final Identifier VANILLA = Identifier.withDefaultNamespace("textures/gui/book.png");
     private static final int GOLD = 0xD6B050;
@@ -50,9 +52,17 @@ public enum BookStyle {
         this.ribbon = ribbon;
     }
 
+    /** Whether the screen dresses the book for winter. */
+    boolean winter() {
+        return this == WINTER;
+    }
+
     /** The cover colour, for the swatch in the settings. */
     int swatch() {
-        return this == CLASSIC ? 0xFF7F3924 : 0xFF000000 | hls(hue, 0.30f * light, sat);
+        if (this == CLASSIC) {
+            return 0xFF7F3924;
+        }
+        return 0xFF000000 | hls(hue, Math.min(0.62f, 0.30f * light), sat);
     }
 
     /** The texture to draw the pages with: the vanilla book for Classic, else the baked copy. */
@@ -185,18 +195,33 @@ public enum BookStyle {
         return Minecraft.getInstance().gameDirectory.toPath().resolve("config").resolve("betterpets-client.properties");
     }
 
+    /**
+     * The player's cover. Until they pick one it follows the season: Winter from 15 November to
+     * 15 January, Midnight the rest of the year.
+     */
     static BookStyle current() {
         if (current == null) {
-            current = MIDNIGHT;
+            current = seasonal();
             try (Reader reader = Files.newBufferedReader(file())) {
                 Properties props = new Properties();
                 props.load(reader);
-                current = BookStyle.valueOf(props.getProperty("bookStyle", MIDNIGHT.name()));
+                String chosen = props.getProperty("bookStyle");
+                if (chosen != null) {
+                    current = BookStyle.valueOf(chosen);
+                }
             } catch (Exception ignored) {
-                // No file yet, or an unknown name: keep the default.
+                // No file yet, or an unknown name: keep the seasonal default.
             }
         }
         return current;
+    }
+
+    private static BookStyle seasonal() {
+        java.time.LocalDate today = java.time.LocalDate.now();
+        int month = today.getMonthValue();
+        int day = today.getDayOfMonth();
+        boolean winter = month == 12 || (month == 11 && day >= 15) || (month == 1 && day <= 15);
+        return winter ? WINTER : MIDNIGHT;
     }
 
     static void choose(BookStyle style) {
