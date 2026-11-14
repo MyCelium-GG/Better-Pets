@@ -23,9 +23,9 @@
 
 <img src="https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/86b553712e6c/docs/img/banners/the-pet-book-box.svg" alt="Shift-right-click your pet, or use /pets menu or /betterpets menu. Every pet has its own page: its name, the pet itself, hearts, what it is doing, where it is, its scarf and the food you carry. The first page lists all your pets. Turn pages with the arrows, the arrow keys or the mouse wheel. Five covers: Winter (snow, icicles, holly and falling snow, on by default from 15 November to 15 January), " width="100%">
 
-![The pet book in its Winter cover: Rex the wolf in a red scarf on the left page, his hearts, whereabouts, scarf and food on the right](https://wiki.mycelium-gg.org/betterpets/img/book-page.png)
+![The pet book in its Winter cover: Rex the wolf in a red scarf on the left page, his hearts, whereabouts, scarf and food on the right](https://wiki.mycelium-gg.org/betterpets/img/book-page.png?v=140)
 
-![The same page of the pet book in five covers: Winter, Midnight, Forest, Leather and Classic](https://wiki.mycelium-gg.org/betterpets/img/book-covers.png)
+![The same page of the pet book in five covers: Winter, Midnight, Forest, Leather and Classic](https://wiki.mycelium-gg.org/betterpets/img/book-covers.png?v=140)
 
 ![Winter update](https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/86b553712e6c/docs/img/banners/winter-update.svg)
 
