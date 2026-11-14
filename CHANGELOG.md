@@ -6,6 +6,22 @@ Better Pets is versioned semantically (`MAJOR.MINOR.PATCH`).
 It runs on Minecraft 26.3, 26.2 and 26.1 (Fabric + Forge + NeoForge, Java 25) and requires
 [Mycel](https://github.com/MyCelium-GG/MyCel-Lib) (`my.celium.org`).
 
+## [1.4.0] - 2026-11-14
+
+The pet book.
+
+### Added
+- The pet menu is now a pet book: every pet has its own page with its name, the pet itself, hearts, what it is doing, where it is, its scarf and the food you carry, and the first page lists all your pets. Turn pages with the arrows, the arrow keys or the mouse wheel.
+- Five covers: Winter (snow on top, icicles, holly and snow falling behind the book, on by default from 15 November to 15 January), Midnight, Forest, Leather and Classic. Every player picks their own.
+- A settings page inside the book (the gear tab on top): pick your cover, and operators can change every Better Pets setting there with a click.
+- `/betterpets`: every setting with clickable values, `menu` to open the pet book, `settings` to open it on the settings page, and `set`, `reset` and `reload` for operators.
+
+### Changed
+- Calmer chat messages: confirmations are plain text, no more green; only the red tag is coloured.
+
+### Fixed
+- Installed without Mycel, the game still starts: Better Pets stays off and tells joining players that Mycel is missing, with a download link. The Pet Scarf recipes only load with Mycel, so worlds still open.
+
 ## [1.3.0] - 2026-11-10
 
 The winter update.

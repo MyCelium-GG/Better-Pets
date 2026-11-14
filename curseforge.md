@@ -1,15 +1,21 @@
 # Better Pets
 
-Owning a dog, cat, parrot or horse, done right. `/pets` lists every pet you own and where it is, even in unloaded chunks. Find it with a glow and an on-screen arrow, call it to you, rename it, give it to a friend. Shift-right-click a pet for a full menu.
+Owning a dog, cat, parrot or horse, done right. `/pets` lists every pet you own and where it is, even in unloaded chunks. Find it with a glow and an on-screen arrow, call it to you, rename it, give it to a friend. Shift-right-click a pet to open its page in your pet book.
+
+**New in 1.4.0, the pet book:** every pet gets its own page in a book, with a contents page listing them all. Pick one of five covers, including a snowy Winter cover with icicles and falling snow, and change the settings right inside the book or with the new `/betterpets` command.
 
 **Winter update:** knit your dog or cat a scarf in any colour, watch your dogs curl up on the end of your bed at night, and see them come in from the snow all white and shake it off.
 
-![The Better Pets menu: pet list, live 3D wolf, health bar, feed slots and action buttons](https://wiki.mycelium-gg.org/betterpets/img/menu.png)
+![The pet book in its Winter cover: Rex the wolf in a red scarf on the left page, his hearts, whereabouts, scarf and food on the right](https://wiki.mycelium-gg.org/betterpets/img/menu.png)
+
+![The same page of the pet book in five covers: Winter, Midnight, Forest, Leather and Classic](https://wiki.mycelium-gg.org/betterpets/img/book-covers.png)
 
 - Pet Scarf: craft it from 3 wool and a string, dye it, right-click your dog or cat
 - Dogs sleep on your bed with you, like cats do
 - Snowy coats in falling snow, shaken off under a roof
-- Christmas pet menu: your pets as tabs, the pet standing in the snow, hearts, food, scarf and every action below
+- Pet book: one page per pet with the live 3D pet, hearts, whereabouts, scarf and food, plus a contents page
+- Five book covers (Winter, Midnight, Forest, Leather, Classic) and a settings page inside the book
+- `/betterpets`: every setting in chat, click to change (operators)
 - `/pets`: all your pets with health, distance, direction and buttons
 - `/pets find`: the pet glows and an arrow above your hotbar points the way
 - `/pets call`: teleports a pet to you

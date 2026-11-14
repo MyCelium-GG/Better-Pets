@@ -25,7 +25,11 @@
 
 ![Dogs and cats in knitted scarves, one lying at the foot of a bed](https://wiki.mycelium-gg.org/betterpets/img/winter-scarves.png)
 
-![The pet menu as a winter night landscape](https://wiki.mycelium-gg.org/betterpets/img/menu.png)
+**1.4.0, the pet book:** your pets live in a book now, one page per pet, in five covers including a snowy Winter one, with the settings inside the book and a new `/betterpets` command.
+
+![The pet book in its Winter cover: Rex the wolf in a red scarf on the left page, his hearts, whereabouts, scarf and food on the right](https://wiki.mycelium-gg.org/betterpets/img/menu.png)
+
+![The same page of the pet book in five covers: Winter, Midnight, Forest, Leather and Classic](https://wiki.mycelium-gg.org/betterpets/img/book-covers.png)
 
 ![Behavior](https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/35a2fc72c7be/docs/img/banners/behavior.svg)
 
