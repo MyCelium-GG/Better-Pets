@@ -20,7 +20,10 @@ public final class BetterPetsFabric implements ModInitializer {
         FabricNetworking.flush();
         ServerTickEvents.END_SERVER_TICK.register(BetterPetsMod::tickServer);
         CommandRegistrationCallback.EVENT.register(
-                (dispatcher, registryAccess, environment) -> PetsCommand.register(dispatcher));
+                (dispatcher, registryAccess, environment) -> {
+                    PetsCommand.register(dispatcher);
+                    my.celium.org.betterpets.BetterPetsCommand.register(dispatcher);
+                });
         ServerLivingEntityEvents.ALLOW_DAMAGE.register(
                 (entity, source, amount) -> !BetterPetsMod.shouldBlockDamage(entity, source));
         AttackEntityCallback.EVENT.register((player, level, hand, entity, hit) ->

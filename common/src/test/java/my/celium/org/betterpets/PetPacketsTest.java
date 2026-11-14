@@ -24,7 +24,7 @@ class PetPacketsTest {
         PetsPacket packet = new PetsPacket(true, id, List.of(pet), details,
                 List.of(new PetsPacket.Person(UUID.randomUUID(), "Steve")), "Yum", true, true, false, true,
                 List.of(new PetsPacket.Setting("allowCall", "Allow calling", false, 1, 0, 1),
-                        new PetsPacket.Setting("findSeconds", "Glow time", true, 30, 5, 300)), true);
+                        new PetsPacket.Setting("findSeconds", "Glow time", true, 30, 5, 300)), true, true);
         FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
         PetsPacket.CODEC.encode(buf, packet);
         assertEquals(packet, PetsPacket.CODEC.decode(buf));

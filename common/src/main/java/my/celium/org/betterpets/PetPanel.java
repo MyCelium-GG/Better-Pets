@@ -78,6 +78,24 @@ public final class PetPanel {
         open(player, all.stream().filter(pet -> !pet.dead).findFirst().orElse(all.get(0)));
     }
 
+    /**
+     * Opens the pet book straight on its settings page. False when that is not possible (no pets
+     * to open the book on, or a client without the mod); the caller then shows the settings in chat.
+     */
+    static boolean openSettings(ServerPlayer player) {
+        List<PetRecord> all = PetTracker.STORE.pets(player.getUUID());
+        if (all.isEmpty() || !MycelNetwork.canSend(player, pets)) {
+            return false;
+        }
+        PetRecord pet = all.stream().filter(p -> !p.dead).findFirst().orElse(all.get(0));
+        OPEN.put(player.getUUID(), pet.id);
+        if (!CONFIRMED.contains(player.getUUID())) {
+            AWAITING.put(player.getUUID(), ticks + ANSWER_TICKS);
+        }
+        send(player, pet, true, "", false, true);
+        return true;
+    }
+
     static void tick(MinecraftServer server) {
         ticks++;
         if (ticks % PetTracker.SCAN_INTERVAL != 0) {
@@ -277,6 +295,11 @@ public final class PetPanel {
     // ---------------------------------------------------------------- what to show
 
     private static void send(ServerPlayer player, PetRecord selected, boolean open, String notice, boolean ok) {
+        send(player, selected, open, notice, ok, false);
+    }
+
+    private static void send(ServerPlayer player, PetRecord selected, boolean open, String notice, boolean ok,
+            boolean showSettings) {
         List<PetsPacket.Pet> rows = new ArrayList<>();
         for (PetRecord pet : PetTracker.STORE.pets(player.getUUID())) {
             rows.add(row(player, pet));
@@ -289,7 +312,7 @@ public final class PetPanel {
         }
         MycelNetwork.sendToPlayer(player, pets, new PetsPacket(open, selected.id, rows, details(player, selected),
                 people, notice, ok, BetterPetsMod.allowCall.get(), BetterPetsMod.allowRename.get(),
-                BetterPetsMod.allowGive.get(), settings(), canEditSettings(player)));
+                BetterPetsMod.allowGive.get(), settings(), canEditSettings(player), showSettings));
     }
 
     /** The mod's options as the settings page shows them. */

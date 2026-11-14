@@ -14,8 +14,15 @@ public final class ClientPets {
     public static void receive(PetsPacket packet) {
         if (MycelScreens.current() instanceof PetScreen screen) {
             screen.update(packet);
+            if (packet.showSettings()) {
+                screen.showSettings();
+            }
         } else if (packet.open()) {
-            MycelScreens.open(new PetScreen(packet));
+            PetScreen screen = new PetScreen(packet);
+            if (packet.showSettings()) {
+                screen.showSettings();
+            }
+            MycelScreens.open(screen);
         }
         if (packet.open()) {
             send(new PetActionPacket(PetActionPacket.Action.OPENED, packet.selected()));
