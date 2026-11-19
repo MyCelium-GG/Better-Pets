@@ -35,6 +35,7 @@ import net.minecraft.server.level.ServerPlayer;
 public final class BetterPetsCommand {
     static final ChatVoice VOICE = TextUtil.voice("Better Pets");
     private static final String ROOT = "betterpets";
+    private static final my.celium.org.translation.ModLang L = BetterPetsMod.LANG;
     private static final int OP = 2;
 
     private static final SuggestionProvider<CommandSourceStack> SETTINGS = (context, builder) -> {
@@ -90,44 +91,45 @@ public final class BetterPetsCommand {
         CommandHelper.info(source, VOICE.header(BetterPetsMod.META.name() + " " + BetterPetsMod.META.version()));
         if (source.getPlayer() != null) {
             CommandHelper.info(source, TextUtil.item(TextUtil.msg(
-                    TextUtil.button("Pet book", "/" + ROOT + " menu", "Open your pet book"),
+                    TextUtil.button(L.get(source, "cmd.book"), "/" + ROOT + " menu", L.get(source, "cmd.book.tip")),
                     TextUtil.body("   "),
-                    TextUtil.button("Settings", "/" + ROOT + " settings", "Open the pet book on its settings page"))));
+                    TextUtil.button(L.get(source, "cmd.settings"), "/" + ROOT + " settings", L.get(source, "cmd.settings.tip")))));
         }
         for (ConfigValue<?> value : BetterPetsMod.config.values()) {
-            CommandHelper.info(source, row(value, op));
+            CommandHelper.info(source, row(source, value, op));
         }
         CommandHelper.info(source, TextUtil.detail(op
-                ? "Click a value to change it. Hover a setting to see what it does."
-                : "Hover a setting to see what it does. Operators can change them."));
+                ? L.get(source, "cmd.click_hint") : L.get(source, "cmd.hover_hint")));
         return 1;
     }
 
-    private static MutableComponent row(ConfigValue<?> value, boolean op) {
+    private static MutableComponent row(CommandSourceStack source, ConfigValue<?> value, boolean op) {
         String path = ConfigStrings.pathOf(value);
+        String description = L.has("config." + value.key() + ".desc") ? L.get(source, "config." + value.key() + ".desc")
+                : value.description();
         MutableComponent name = TextUtil.muted(path + "  ").withStyle(style -> style.withHoverEvent(
-                new HoverEvent.ShowText(TextUtil.body(value.description()))));
+                new HoverEvent.ShowText(TextUtil.body(description))));
         MutableComponent shown;
         if (value instanceof ConfigValue.BooleanValue bool) {
             boolean on = bool.get();
-            shown = state(on);
+            shown = state(source, on);
             if (op) {
                 shown = TextUtil.empty().append(shown).append(TextUtil.body("   ")).append(TextUtil.button(
-                        on ? "Turn off" : "Turn on", "/" + ROOT + " set " + path + " " + !on, value.description()));
+                        L.get(source, on ? "cmd.turn_off" : "cmd.turn_on"), "/" + ROOT + " set " + path + " " + !on, description));
             }
         } else {
             shown = TextUtil.hex(ConfigStrings.valueToString(value), TextUtil.ACCENT);
             if (op) {
                 shown = TextUtil.empty().append(shown).append(TextUtil.body("   ")).append(TextUtil.suggest(
-                        "Change", "/" + ROOT + " set " + path + " ", ConfigStrings.describe(value)));
+                        L.get(source, "cmd.change"), "/" + ROOT + " set " + path + " ", ConfigStrings.describe(value)));
             }
         }
         return TextUtil.item(TextUtil.empty().append(name).append(shown));
     }
 
-    private static MutableComponent state(boolean on) {
-        return on ? TextUtil.hex("on", TextUtil.BRIGHT).withStyle(style -> style.withBold(true))
-                : TextUtil.hex("off", TextUtil.FAINT);
+    private static MutableComponent state(CommandSourceStack source, boolean on) {
+        return on ? TextUtil.hex(L.get(source, "cmd.on"), TextUtil.BRIGHT).withStyle(style -> style.withBold(true))
+                : TextUtil.hex(L.get(source, "cmd.off"), TextUtil.FAINT);
     }
 
     // ---------------------------------------------------------------- the pet book
@@ -160,18 +162,18 @@ public final class BetterPetsCommand {
         try {
             ConfigStrings.parseAndSet(value, raw);
         } catch (IllegalArgumentException e) {
-            CommandHelper.failure(source, VOICE.fail("'" + raw + "' does not work for "
-                    + ConfigStrings.pathOf(value) + ". Allowed: " + ConfigStrings.describe(value) + "."));
+            CommandHelper.failure(source, VOICE.fail(L.get(source, "cmd.invalid", raw, ConfigStrings.pathOf(value),
+                    ConfigStrings.describe(value))));
             return 0;
         }
         BetterPetsMod.config.save();
         PetStats.count("command_set");
         String after = ConfigStrings.valueToString(value);
         if (before.equals(after)) {
-            CommandHelper.success(source, VOICE.note(ConfigStrings.pathOf(value) + " is already " + after + "."));
+            CommandHelper.success(source, VOICE.note(L.get(source, "cmd.already", ConfigStrings.pathOf(value), after)));
         } else {
-            CommandHelper.success(source, VOICE.note(ConfigStrings.pathOf(value) + " is now ",
-                    TextUtil.hex(after, TextUtil.ACCENT), TextUtil.muted("   was " + before)));
+            CommandHelper.success(source, VOICE.note(L.text(source, "cmd.now", ConfigStrings.pathOf(value),
+                    TextUtil.hex(after, TextUtil.ACCENT)), TextUtil.muted("   " + L.get(source, "cmd.was", before))));
         }
         return 1;
     }
@@ -185,8 +187,8 @@ public final class BetterPetsCommand {
         value.reset();
         BetterPetsMod.config.save();
         PetStats.count("command_reset");
-        CommandHelper.success(source, VOICE.note(ConfigStrings.pathOf(value) + " is back to ",
-                TextUtil.hex(ConfigStrings.valueToString(value), TextUtil.ACCENT), "."));
+        CommandHelper.success(source, VOICE.note(L.text(source, "cmd.back", ConfigStrings.pathOf(value),
+                TextUtil.hex(ConfigStrings.valueToString(value), TextUtil.ACCENT))));
         return 1;
     }
 
@@ -194,23 +196,22 @@ public final class BetterPetsCommand {
         BetterPetsMod.config.resetAll();
         BetterPetsMod.config.save();
         PetStats.count("command_reset");
-        CommandHelper.success(context.getSource(), VOICE.note("Every setting is back to its default."));
+        CommandHelper.success(context.getSource(), VOICE.note(L.get(context.getSource(), "cmd.all_reset")));
         return 1;
     }
 
     private static int reload(CommandContext<CommandSourceStack> context) {
         BetterPetsMod.config.reload();
         PetStats.count("command_reload");
-        CommandHelper.success(context.getSource(), VOICE.note("Read the settings again from "
-                + BetterPetsMod.config.file().getFileName() + "."));
+        CommandHelper.success(context.getSource(), VOICE.note(L.get(context.getSource(), "cmd.reloaded",
+                BetterPetsMod.config.file().getFileName())));
         return 1;
     }
 
     private static ConfigValue<?> find(CommandSourceStack source, String path) {
         ConfigValue<?> value = ConfigStrings.find(BetterPetsMod.config, path);
         if (value == null) {
-            CommandHelper.failure(source, VOICE.fail("There is no setting called '" + path + "'. Type /"
-                    + ROOT + " to see them all."));
+            CommandHelper.failure(source, VOICE.fail(L.get(source, "cmd.no_setting", path, ROOT)));
         }
         return value;
     }

@@ -100,11 +100,11 @@ public final class PetsCommand {
         }
         List<PetRecord> pets = PetTracker.STORE.pets(player.getUUID());
         if (pets.isEmpty()) {
-            player.sendSystemMessage(PetText.info("No pets yet. Tame a wolf, cat, parrot or horse and it shows up here."));
+            player.sendSystemMessage(PetText.info(PetText.t(player, "no_pets")));
             return 0;
         }
         PetStats.count("list");
-        player.sendSystemMessage(PetText.header("Your pets", String.valueOf(pets.size())));
+        player.sendSystemMessage(PetText.header(PetText.t(player, "your_pets"), String.valueOf(pets.size())));
         long now = System.currentTimeMillis();
         for (int i = 0; i < pets.size(); i++) {
             player.sendSystemMessage(row(player, pets.get(i), i + 1, now));
@@ -123,19 +123,19 @@ public final class PetsCommand {
             hover.append(TextUtil.hex("  ♥ ", PetText.HEART))
                     .append(TextUtil.body(PetBrain.health(pet.health, pet.maxHealth)));
             if (pet.sitting) {
-                hover.append(TextUtil.muted("\nSitting"));
+                hover.append(TextUtil.muted("\n" + PetText.t(player, "status.sitting")));
             } else if (pet.leashed) {
-                hover.append(TextUtil.muted("\nOn a lead"));
+                hover.append(TextUtil.muted("\n" + PetText.t(player, "status.leashed")));
             }
         }
         line.append(PetText.name(pet).withStyle(style -> style.withHoverEvent(new HoverEvent.ShowText(hover))));
 
         if (pet.dead) {
-            line.append(PetText.sep()).append(TextUtil.hex("died " + PetBrain.ago(now - pet.lastSeen), PetText.DEAD)
+            line.append(PetText.sep()).append(TextUtil.hex(PetText.t(player, "died_ago", PetText.ago(player, now - pet.lastSeen)), PetText.DEAD)
                     .withStyle(style -> style.withHoverEvent(new HoverEvent.ShowText(
-                            TextUtil.body(pet.deathMessage == null ? "Died" : pet.deathMessage)))));
+                            TextUtil.body(pet.deathMessage == null ? PetText.t(player, "died") : pet.deathMessage)))));
             line.append(PetText.sep()).append(place(player, pet)).append(TextUtil.body("   "));
-            line.append(PetText.button("Forget", "/pets forget " + arg, "Remove it from your list"));
+            line.append(PetText.button(PetText.t(player, "button.forget"), "/pets forget " + arg, PetText.t(player, "button.forget.tip")));
             return TextUtil.item(line);
         }
 
@@ -145,20 +145,20 @@ public final class PetsCommand {
         // A pet that just unloaded is where the list says it is; only older sightings need a time.
         long unseen = now - pet.lastSeen;
         if (!loaded && unseen >= 60_000L) {
-            line.append(TextUtil.muted(" (" + PetBrain.ago(unseen) + ")"));
+            line.append(TextUtil.muted(" (" + PetText.ago(player, unseen) + ")"));
         }
 
         List<Component> buttons = new java.util.ArrayList<>();
         if (BetterPetsMod.petMenu.get()) {
-            buttons.add(PetText.button("Menu", "/pets menu " + pet.id, "Open its menu"));
+            buttons.add(PetText.button(PetText.t(player, "button.menu"), "/pets menu " + pet.id, PetText.t(player, "button.menu.tip")));
         }
-        buttons.add(PetText.button("Find", "/pets find " + arg, "Make it glow and point the way"));
+        buttons.add(PetText.button(PetText.t(player, "button.find"), "/pets find " + arg, PetText.t(player, "button.find.tip")));
         if (BetterPetsMod.allowCall.get()) {
-            buttons.add(PetText.button("Call", "/pets call " + arg, "Teleport it to you"));
+            buttons.add(PetText.button(PetText.t(player, "button.call"), "/pets call " + arg, PetText.t(player, "button.call.tip")));
         }
         if (BetterPetsMod.allowRename.get()) {
-            buttons.add(PetText.suggest("Name", "/pets name " + arg + " ",
-                    "Give it a new name\nColors work: &6Gold, <#ff55aa>pink, <gradient:gold:red>fire"));
+            buttons.add(PetText.suggest(PetText.t(player, "button.name"), "/pets name " + arg + " ",
+                    PetText.t(player, "button.name.tip") + "\n" + PetText.t(player, "colors_work") + " &6Gold, <#ff55aa>pink, <gradient:gold:red>fire"));
         }
         line.append(TextUtil.body("   ")).append(PetText.buttons(buttons.toArray(Component[]::new)));
         return TextUtil.item(line);
@@ -166,16 +166,16 @@ public final class PetsCommand {
 
     /** "12 m NW", or "in the nether"; hover shows the coordinates, click copies them. */
     private static MutableComponent place(ServerPlayer player, PetRecord pet) {
-        return PetText.place(placeText(player, pet), pet);
+        return PetText.place(player, placeText(player, pet), pet);
     }
 
     static String placeText(ServerPlayer player, PetRecord pet) {
         if (player.level().dimension().identifier().toString().equals(pet.dimension)) {
             double dx = pet.x - player.getX();
             double dz = pet.z - player.getZ();
-            return PetBrain.distance(Math.sqrt(dx * dx + dz * dz)) + " " + PetBrain.compass(dx, dz);
+            return PetBrain.distance(Math.sqrt(dx * dx + dz * dz)) + " " + PetText.compass(player, PetBrain.compass(dx, dz));
         }
-        return "in the " + PetBrain.dimensionName(pet.dimension);
+        return PetText.inDimension(player, pet.dimension);
     }
 
     // ---------------------------------------------------------------- actions
@@ -190,7 +190,7 @@ public final class PetsCommand {
             return 0;
         }
         if (PetTracker.STORE.pets(player.getUUID()).isEmpty()) {
-            player.sendSystemMessage(PetText.info("No pets yet. Tame a wolf, cat, parrot or horse and it shows up here."));
+            player.sendSystemMessage(PetText.info(PetText.t(player, "no_pets")));
             return 0;
         }
         PetPanel.openList(player);
@@ -215,7 +215,7 @@ public final class PetsCommand {
             return false;
         }
         if (!BetterPetsMod.petMenu.get()) {
-            player.sendSystemMessage(PetText.fail("The pet menu is turned off on this server. /pets still works."));
+            player.sendSystemMessage(PetText.fail(PetText.t(player, "off.menu")));
             return false;
         }
         return true;
@@ -229,19 +229,17 @@ public final class PetsCommand {
 
     static int find(ServerPlayer player, PetRecord pet) {
         if (pet.dead) {
-            player.sendSystemMessage(PetText.fail(PetText.name(pet),
-                    " died at ", PetText.coords(pet.x, pet.y, pet.z),
-                    TextUtil.muted(" in the " + PetBrain.dimensionName(pet.dimension))));
+            player.sendSystemMessage(PetText.fail(PetText.c(player, "died_at", PetText.name(pet), PetText.coords(player, pet.x, pet.y, pet.z)),
+                    TextUtil.muted(" " + PetText.inDimension(player, pet.dimension))));
             return 0;
         }
         int seconds = BetterPetsMod.findSeconds.get();
         PetTracker.startFind(player, pet, seconds);
         PetStats.count("find");
         if (PetTracker.loaded(pet.id) != null) {
-            player.sendSystemMessage(PetText.ok(PetText.name(pet), " glows for ", PetText.value(seconds + "s"),
-                    ". Follow the arrow above your hotbar."));
+            player.sendSystemMessage(PetText.ok(PetText.c(player, "find.glows", PetText.name(pet), PetText.value(seconds + "s"))));
         } else {
-            player.sendSystemMessage(PetText.ok(PetText.name(pet), " is far away. The arrow points to where it was last seen."));
+            player.sendSystemMessage(PetText.ok(PetText.c(player, "find.far", PetText.name(pet))));
         }
         return 1;
     }
@@ -249,7 +247,7 @@ public final class PetsCommand {
     private static int call(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         ServerPlayer player = context.getSource().getPlayerOrException();
         if (!BetterPetsMod.allowCall.get()) {
-            player.sendSystemMessage(PetText.fail("Calling pets is turned off on this server."));
+            player.sendSystemMessage(PetText.fail(PetText.t(player, "off.call")));
             return 0;
         }
         PetRecord pet = resolve(player, StringArgumentType.getString(context, "pet"));
@@ -264,8 +262,8 @@ public final class PetsCommand {
         long cooldown = BetterPetsMod.callCooldownSeconds.get() * 1000L;
         Long last = LAST_CALL.get(player.getUUID());
         if (last != null && now - last < cooldown) {
-            player.sendSystemMessage(PetText.fail("Your pets need a breather. Call again in ",
-                    PetText.value(((cooldown - (now - last)) / 1000 + 1) + "s"), "."));
+            player.sendSystemMessage(PetText.fail(PetText.c(player, "call.cooldown",
+                    PetText.value(((cooldown - (now - last)) / 1000 + 1) + "s"))));
             return 0;
         }
         Component error = PetTracker.call(player, pet, argument(player, pet));
@@ -274,7 +272,7 @@ public final class PetsCommand {
             return 0;
         }
         LAST_CALL.put(player.getUUID(), now);
-        player.sendSystemMessage(PetText.ok(PetText.name(pet), " came running."));
+        player.sendSystemMessage(PetText.ok(PetText.c(player, "call.done", PetText.name(pet))));
         return 1;
     }
 
@@ -282,7 +280,7 @@ public final class PetsCommand {
         ServerPlayer player = context.getSource().getPlayerOrException();
         boolean fromDialog = PetMenu.fromDialog(player);
         if (!BetterPetsMod.allowRename.get()) {
-            player.sendSystemMessage(PetText.fail("Renaming is turned off on this server. A name tag still works."));
+            player.sendSystemMessage(PetText.fail(PetText.t(player, "off.rename")));
             return 0;
         }
         PetRecord pet = resolve(player, StringArgumentType.getString(context, "pet"));
@@ -307,24 +305,23 @@ public final class PetsCommand {
     private static int rename(ServerPlayer player, PetRecord pet, String raw) {
         String typed = validName(raw);
         if (typed == null) {
-            player.sendSystemMessage(PetText.fail("A name needs 1 to ", PetText.value(String.valueOf(PetBrain.MAX_NAME_LENGTH)),
-                    " letters (colors don't count)."));
+            player.sendSystemMessage(PetText.fail(PetText.c(player, "name.length", PetText.value(String.valueOf(PetBrain.MAX_NAME_LENGTH)))));
             return 0;
         }
         MutableComponent before = PetText.name(pet);
-        Component error = PetTracker.rename(pet, typed);
+        Component error = PetTracker.rename(player, pet, typed);
         if (error != null) {
             player.sendSystemMessage(PetText.fail(error));
             return 0;
         }
-        player.sendSystemMessage(PetText.ok(before, " is now called ", PetNameFormat.parse(typed), "."));
+        player.sendSystemMessage(PetText.ok(PetText.c(player, "name.done", before, PetNameFormat.parse(typed))));
         return 1;
     }
 
     private static int give(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         ServerPlayer player = context.getSource().getPlayerOrException();
         if (!BetterPetsMod.allowGive.get()) {
-            player.sendSystemMessage(PetText.fail("Giving pets away is turned off on this server."));
+            player.sendSystemMessage(PetText.fail(PetText.t(player, "off.give")));
             return 0;
         }
         PetRecord pet = resolve(player, StringArgumentType.getString(context, "pet"));
@@ -337,7 +334,7 @@ public final class PetsCommand {
             return 0;
         }
         if (target == player) {
-            player.sendSystemMessage(PetText.fail(PetText.name(pet), " is already yours."));
+            player.sendSystemMessage(PetText.fail(PetText.c(player, "give.yours", PetText.name(pet))));
             return 0;
         }
         MutableComponent name = PetText.name(pet);
@@ -346,7 +343,7 @@ public final class PetsCommand {
             player.sendSystemMessage(PetText.fail(error));
             return 0;
         }
-        player.sendSystemMessage(PetText.ok(name, " now belongs to ", target.getDisplayName(), "."));
+        player.sendSystemMessage(PetText.ok(PetText.c(player, "give.done", name, target.getDisplayName())));
         target.sendSystemMessage(PetText.ok(player.getDisplayName(),
                 " gave you ", name, "!   ", PetText.button("Show pets", "/pets", "Show your pets")));
         return 1;
@@ -360,12 +357,12 @@ public final class PetsCommand {
 
     static int forget(ServerPlayer player, PetRecord pet) {
         if (!pet.dead && PetTracker.loaded(pet.id) != null) {
-            player.sendSystemMessage(PetText.fail(PetText.name(pet), " is right here and would be back on the list in a second."));
+            player.sendSystemMessage(PetText.fail(PetText.c(player, "forget.here", PetText.name(pet))));
             return 0;
         }
         PetTracker.STORE.remove(player.getUUID(), pet.id);
         PetStats.count("forget");
-        player.sendSystemMessage(PetText.ok(PetText.name(pet), " was removed from your list."));
+        player.sendSystemMessage(PetText.ok(PetText.c(player, "forget.done", PetText.name(pet))));
         return 1;
     }
 
@@ -373,7 +370,7 @@ public final class PetsCommand {
 
     private static boolean enabled(ServerPlayer player) {
         if (!BetterPetsMod.isModEnabled()) {
-            player.sendSystemMessage(PetText.fail("Better Pets is turned off on this server."));
+            player.sendSystemMessage(PetText.fail(PetText.t(player, "off.all")));
             return false;
         }
         return true;
@@ -381,8 +378,8 @@ public final class PetsCommand {
 
     private static boolean isDead(ServerPlayer player, PetRecord pet) {
         if (pet.dead) {
-            player.sendSystemMessage(PetText.fail(PetText.name(pet), " died " + PetBrain.ago(System.currentTimeMillis() - pet.lastSeen) + ". ",
-                    PetText.button("Forget", "/pets forget " + argument(player, pet), "Remove it from your list")));
+            player.sendSystemMessage(PetText.fail(PetText.c(player, "dead", PetText.name(pet), PetText.ago(player, System.currentTimeMillis() - pet.lastSeen)), " ",
+                    PetText.button(PetText.t(player, "button.forget"), "/pets forget " + argument(player, pet), PetText.t(player, "button.forget.tip"))));
             return true;
         }
         return false;
@@ -399,15 +396,14 @@ public final class PetsCommand {
             return matches.get(0);
         }
         if (matches.isEmpty()) {
-            player.sendSystemMessage(PetText.fail("You have no pet called ", PetText.value(query), ". ",
-                    PetText.button("Show pets", "/pets", "Show your pets")));
+            player.sendSystemMessage(PetText.fail(PetText.c(player, "no_such_pet", PetText.value(query)), " ",
+                    PetText.button(PetText.t(player, "button.show"), "/pets", PetText.t(player, "button.show.tip"))));
         } else {
             MutableComponent names = PetText.msg();
             for (int i = 0; i < matches.size(); i++) {
                 names.append(i == 0 ? PetText.msg() : TextUtil.body(", ")).append(PetText.name(matches.get(i)));
             }
-            player.sendSystemMessage(PetText.fail(PetText.value(query), " could be ", names,
-                    ". Type more of the name, or use its number from /pets."));
+            player.sendSystemMessage(PetText.fail(PetText.c(player, "ambiguous", PetText.value(query), names)));
         }
         return null;
     }

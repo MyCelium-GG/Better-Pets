@@ -10,6 +10,7 @@ import my.celium.org.config.MycelConfig;
 import my.celium.org.event.MycelEvents;
 import my.celium.org.event.ServerLifecycleEvent;
 import my.celium.org.metadata.ModMetadata;
+import my.celium.org.translation.ModLang;
 import my.celium.org.network.MycelNetwork;
 import my.celium.org.network.PacketDefinition;
 import my.celium.org.registry.DeferredEntry;
@@ -48,7 +49,10 @@ import net.minecraft.world.entity.player.Player;
 public final class BetterPetsMod {
     public static final String ID = "betterpets";
 
-    public static final ModMetadata META = ModMetadata.builder(ID, "Better Pets", "1.4.0")
+    /** Messages in each player's language (assets/betterpets/lang). */
+    public static final ModLang LANG = ModLang.of("betterpets", BetterPetsMod.class);
+
+    public static final ModMetadata META = ModMetadata.builder(ID, "Better Pets", "1.5.0")
             .author("MyCelium")
             .website("https://www.curseforge.com/minecraft/mc-mods/better-pets")
             .updateUrl("https://wiki.mycelium-gg.org/updates/betterpets.json")

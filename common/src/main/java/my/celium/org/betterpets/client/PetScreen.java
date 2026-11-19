@@ -23,6 +23,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
@@ -111,7 +112,7 @@ public final class PetScreen extends Screen {
     private long noticeAt;
 
     PetScreen(PetsPacket state) {
-        super(Component.literal("Your pets"));
+        super(Component.literal(tr("your_pets")));
         this.state = state;
     }
 
@@ -202,33 +203,33 @@ public final class PetScreen extends Screen {
 
     @Override
     protected void init() {
-        nameBox = new EditBox(font, leftX0(), nameY(), leftX1() - leftX0(), 12, Component.literal("Name"));
+        nameBox = new EditBox(font, leftX0(), nameY(), leftX1() - leftX0(), 12, Component.literal(tr("button.name")));
         nameBox.setMaxLength(PetBrain.MAX_TYPED_LENGTH);
         nameBox.setBordered(false);
         nameBox.setTextColor(INK);
-        nameBox.setHint(Component.literal("Give it a name"));
+        nameBox.setHint(Component.literal(tr("book.name_hint")));
         addRenderableWidget(nameBox);
 
         int w = (BOOK_W - BUTTON_GAP * 4) / 5;
         int x = bookX();
         int y = buttonY();
-        mainButton = addRenderableWidget(Button.builder(Component.literal("Sit"), b -> mainAction.run())
+        mainButton = addRenderableWidget(Button.builder(Component.literal(tr("action.sit")), b -> mainAction.run())
                 .bounds(x, y, w, BUTTON_H).build());
-        findButton = addRenderableWidget(Button.builder(Component.literal("Find"), b -> sendAndClose(Action.FIND))
+        findButton = addRenderableWidget(Button.builder(Component.literal(tr("button.find")), b -> sendAndClose(Action.FIND))
                 .bounds(x + (w + BUTTON_GAP), y, w, BUTTON_H).build());
-        callButton = addRenderableWidget(Button.builder(Component.literal("Call"), b -> sendAndClose(Action.CALL))
+        callButton = addRenderableWidget(Button.builder(Component.literal(tr("button.call")), b -> sendAndClose(Action.CALL))
                 .bounds(x + (w + BUTTON_GAP) * 2, y, w, BUTTON_H).build());
-        giveButton = addRenderableWidget(Button.builder(Component.literal("Give"), b -> {
+        giveButton = addRenderableWidget(Button.builder(Component.literal(tr("book.give")), b -> {
             giving = true;
             armedPlayer = null;
             stopRenaming();
             sync();
         }).bounds(x + (w + BUTTON_GAP) * 3, y, w, BUTTON_H).build());
-        cancelButton = addRenderableWidget(Button.builder(Component.literal("Cancel"), b -> {
+        cancelButton = addRenderableWidget(Button.builder(Component.translatable("gui.cancel"), b -> {
             giving = false;
             sync();
         }).bounds(x + (w + BUTTON_GAP) * 3, y, w, BUTTON_H).build());
-        doneButton = addRenderableWidget(Button.builder(Component.literal("Done"), b -> onClose())
+        doneButton = addRenderableWidget(Button.builder(Component.translatable("gui.done"), b -> onClose())
                 .bounds(bookX() + BOOK_W - w, y, w, BUTTON_H).build());
 
         backPage = addRenderableWidget(new PageButton(bookX() + MARGIN + 4, arrowY(), false, b -> turn(-1), true));
@@ -256,23 +257,23 @@ public final class PetScreen extends Screen {
         boolean far = onPet && !d.near();
         boolean forgettable = onPet && (pet.dead() || !pet.loaded());
         if (onPet && pet.dead()) {
-            setMain("Forget", () -> send(Action.FORGET), true);
+            setMain(tr("button.forget"), () -> send(Action.FORGET), true);
         } else if (onPet && d.canSit()) {
-            setMain(d.sitting() ? "Stand" : "Sit", () -> send(Action.SIT), d.near());
+            setMain(tr(d.sitting() ? "book.stand" : "action.sit"), () -> send(Action.SIT), d.near());
         } else if (onPet && d.hasInventory()) {
-            setMain("Gear", () -> send(Action.INVENTORY), d.near());
+            setMain(tr("book.gear"), () -> send(Action.INVENTORY), d.near());
         } else if (forgettable) {
-            setMain("Forget", () -> send(Action.FORGET), true);
+            setMain(tr("button.forget"), () -> send(Action.FORGET), true);
         } else {
-            setMain("Sit", () -> { }, false);
+            setMain(tr("action.sit"), () -> { }, false);
         }
-        mainButton.setTooltip(far && mainButton.getMessage().getString().matches("Sit|Stand|Gear")
-                ? Tooltip.create(Component.literal("Too far away. Call it first."))
+        mainButton.setTooltip(far && onPet && !pet.dead() && (d.canSit() || d.hasInventory())
+                ? Tooltip.create(Component.literal(tr("book.far")))
                 : null);
         findButton.active = alive;
         callButton.active = alive && state.allowCall();
         callButton.setTooltip(alive && far && state.allowCall()
-                ? Tooltip.create(Component.literal("Brings it to you")) : null);
+                ? Tooltip.create(Component.literal(tr("book.call.tip"))) : null);
         giveButton.active = alive && state.allowGive();
 
         mainButton.visible = !giving;
@@ -561,7 +562,7 @@ public final class PetScreen extends Screen {
     }
 
     private int takeOffX() {
-        return rightX1() - font.width("Take off");
+        return rightX1() - font.width(tr("book.take_off"));
     }
 
     private boolean overTakeOff(double mx, double my) {
@@ -630,7 +631,7 @@ public final class PetScreen extends Screen {
                 drawRightPage(gfx, pet, mouseX, mouseY);
             }
         }
-        String indicator = "Page " + (currentPage() + 1) + " of " + pageCount();
+        String indicator = tr("book.page", currentPage() + 1, pageCount());
         gfx.text(font, indicator, rightX1() - font.width(indicator), pageTop(), FADED, false);
         drawGear(gfx, mouseX, mouseY);
         drawNotice(gfx);
@@ -746,7 +747,7 @@ public final class PetScreen extends Screen {
             Winter.snowCap(gfx, x, x + GEAR_W, y + 1);
         }
         if (hot) {
-            gfx.setTooltipForNextFrame(font, Component.literal("Settings"), mx, my);
+            gfx.setTooltipForNextFrame(font, Component.literal(tr("cmd.settings")), mx, my);
         }
     }
 
@@ -835,7 +836,7 @@ public final class PetScreen extends Screen {
     }
 
     private boolean overDone(double mx, double my) {
-        int w = font.width("Done");
+        int w = font.width(Component.translatable("gui.done"));
         int x = (panelX0() + panelX1() - w) / 2;
         return mx >= x - 4 && mx < x + w + 4 && my >= doneY() - 2 && my < doneY() + 10;
     }
@@ -888,10 +889,11 @@ public final class PetScreen extends Screen {
         }
         int x0 = panelX0();
         int x1 = panelX1();
-        centered(gfx, Component.literal("Settings").withStyle(Style.EMPTY.withBold(true)), x0, x1, y + 14, INK);
+        centered(gfx, Component.literal(tr("cmd.settings")).withStyle(Style.EMPTY.withBold(true)), x0, x1, y + 14, INK);
 
-        gfx.text(font, "Book", x0, y + 29, FADED, false);
-        gfx.text(font, style.label, x1 - font.width(style.label), y + 29, INK, false);
+        gfx.text(font, tr("book.cover"), x0, y + 29, FADED, false);
+        String coverName = tr("cover." + style.name().toLowerCase(java.util.Locale.ROOT));
+        gfx.text(font, coverName, x1 - font.width(coverName), y + 29, INK, false);
         int hovered = swatchAt(mx, my);
         BookStyle[] styles = BookStyle.values();
         for (int i = 0; i < styles.length; i++) {
@@ -910,15 +912,15 @@ public final class PetScreen extends Screen {
                 gfx.fill(sx + 2, sy + 14, sx + SWATCH_W - 2, sy + 15, INK);
             }
             if (i == hovered) {
-                gfx.setTooltipForNextFrame(font, Component.literal(styles[i].label), mx, my);
+                gfx.setTooltipForNextFrame(font, Component.literal(tr("cover." + styles[i].name().toLowerCase(java.util.Locale.ROOT))), mx, my);
             }
         }
 
         gfx.fill(x0, y + 59, x1, y + 60, RULE);
         boolean canEdit = state.canEditSettings();
-        gfx.text(font, "Pet rules", x0, y + 63, FADED, false);
+        gfx.text(font, tr("book.rules"), x0, y + 63, FADED, false);
         if (!canEdit) {
-            String note = "ops only";
+            String note = tr("book.ops_only");
             gfx.text(font, note, x1 - font.width(note), y + 63, RED, false);
         }
         List<PetsPacket.Setting> settings = state.settings();
@@ -943,17 +945,18 @@ public final class PetScreen extends Screen {
                 gfx.text(font, number, vx + 22 - font.width(number) / 2, ry, canEdit ? INK : FADED, false);
                 gfx.text(font, ">", x1 - 5, ry, canEdit ? (upHot ? RED_HOT : INK) : FADED, false);
             } else {
-                String word = setting.value() != 0 ? "On" : "Off";
-                valueW = font.width("Off");
+                String word = (setting.value() != 0 ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF).getString();
+                valueW = Math.max(font.width(CommonComponents.OPTION_ON.getString()), font.width(CommonComponents.OPTION_OFF.getString()));
                 int color = !canEdit || setting.value() == 0 ? FADED : INK;
                 gfx.text(font, word, x1 - font.width(word), ry, color, false);
             }
             gfx.text(font, Ui.fit(font, label(setting.key()), x1 - x0 - valueW - 4), x0, ry, canEdit ? INK : FADED, false);
             if (rowHot) {
                 List<Component> tip = new ArrayList<>();
-                tip.add(Component.literal(setting.description()));
+                tip.add(Component.literal(net.minecraft.locale.Language.getInstance().has("betterpets.config." + setting.key() + ".desc")
+                        ? tr("config." + setting.key() + ".desc") : setting.description()));
                 if (setting.number() && canEdit) {
-                    tip.add(Component.literal("Click < or >, hold Shift for bigger steps")
+                    tip.add(Component.literal(tr("book.number_tip"))
                             .withStyle(Style.EMPTY.withColor(0xA0A0A0)));
                 }
                 gfx.setComponentTooltipForNextFrame(font, tip, mx, my);
@@ -967,28 +970,18 @@ public final class PetScreen extends Screen {
         }
 
         boolean doneHot = overDone(mx, my);
-        int w = font.width("Done");
+        int w = font.width(Component.translatable("gui.done"));
         int dx = (x0 + x1 - w) / 2;
-        gfx.text(font, "Done", dx, doneY(), doneHot ? RED_HOT : RED, false);
+        gfx.text(font, Component.translatable("gui.done"), dx, doneY(), doneHot ? RED_HOT : RED, false);
         gfx.fill(dx, doneY() + 9, dx + w, doneY() + 10, doneHot ? RED_HOT : RED);
     }
 
     /** A setting's name for people: known keys get a short label, others are split at capitals. */
     private static String label(String key) {
+        if (net.minecraft.locale.Language.getInstance().has("betterpets.config." + key)) {
+            return tr("config." + key);
+        }
         return switch (key) {
-            case "enabled" -> "Better Pets on";
-            case "petMenu" -> "Pet book";
-            case "protectFromOwner" -> "Owner can't hurt pets";
-            case "strongLeads" -> "Strong leads";
-            case "deathAlerts" -> "Death alerts";
-            case "allowCall" -> "Allow Call";
-            case "callCooldownSeconds" -> "Call cooldown (s)";
-            case "allowRename" -> "Allow renaming";
-            case "allowGive" -> "Allow giving";
-            case "findSeconds" -> "Find glow (s)";
-            case "scarves" -> "Pet scarves";
-            case "sleepOnBed" -> "Dogs sleep on beds";
-            case "snowyCoats" -> "Snowy coats";
             default -> {
                 String words = key.replaceAll("([a-z])([A-Z])", "$1 $2").toLowerCase();
                 yield Character.toUpperCase(words.charAt(0)) + words.substring(1);
@@ -1008,16 +1001,16 @@ public final class PetScreen extends Screen {
 
     private void drawContents(GuiGraphicsExtractor gfx, int mx, int my) {
         if (contentsPage <= 0) {
-            centered(gfx, Component.literal("My Pets").withStyle(Style.EMPTY.withBold(true)), leftX0(), leftX1(), pageTop(), INK);
+            centered(gfx, Component.literal(tr("book.my_pets")).withStyle(Style.EMPTY.withBold(true)), leftX0(), leftX1(), pageTop(), INK);
         } else {
-            centered(gfx, Component.literal("My Pets, continued"), leftX0(), leftX1(), pageTop(), FADED);
+            centered(gfx, Component.literal(tr("book.my_pets_more")), leftX0(), leftX1(), pageTop(), FADED);
         }
         int top = bookY() + CONTENTS_TOP;
         gfx.fill(leftX0(), top - 6, leftX1(), top - 5, RULE);
         gfx.fill(rightX0(), top - 6, rightX1(), top - 5, RULE);
         List<PetsPacket.Pet> pets = state.pets();
         if (pets.isEmpty()) {
-            gfx.textWithWordWrap(font, Component.literal("No pets yet. Tame one and it shows up here."),
+            gfx.textWithWordWrap(font, Component.literal(tr("book.no_pets")),
                     leftX0(), top, leftX1() - leftX0(), FADED, false);
             return;
         }
@@ -1037,14 +1030,14 @@ public final class PetScreen extends Screen {
             if (pet.dead()) {
                 gfx.fill(x0, y, x0 + 16, y + 16, 0x88E8DBB5);
             }
-            String hp = pet.dead() ? "gone" : PetBrain.health(pet.health(), pet.maxHealth());
+            String hp = pet.dead() ? tr("book.gone_short") : PetBrain.health(pet.health(), pet.maxHealth());
             int hpX = x1 - font.width(hp);
             gfx.text(font, hp, hpX, y + 4, pet.dead() ? RED : FADED, false);
             String name = Ui.fit(font, pet.displayName().getString(), hpX - (x0 + 20) - 4);
             Component shown = name.equals(pet.displayName().getString()) ? pet.displayName() : Component.literal(name);
             gfx.text(font, shown, x0 + 20, y + 4, pet.dead() ? FADED : INK, false);
             if (i == hovered) {
-                gfx.setTooltipForNextFrame(font, Component.literal("Open " + pet.displayName().getString() + "'s page"), mx, my);
+                gfx.setTooltipForNextFrame(font, Component.literal(tr("book.open_page", pet.displayName().getString())), mx, my);
             }
         }
     }
@@ -1068,12 +1061,12 @@ public final class PetScreen extends Screen {
                 int w = Math.min(x1 - x0, font.width(title(pet)));
                 int x = (x0 + x1 - w) / 2;
                 gfx.fill(x, nameY() + 9, x + w, nameY() + 10, INK);
-                gfx.setTooltipForNextFrame(font, Component.literal("Click to rename"), mx, my);
+                gfx.setTooltipForNextFrame(font, Component.literal(tr("book.click_rename")), mx, my);
             }
             centered(gfx, pet.species(), x0, x1, nameY() + 12, FADED);
         } else {
             gfx.fill(x0, nameY() + 10, x1, nameY() + 11, INK);
-            gfx.textWithWordWrap(font, Component.literal("Enter saves. Colors: &6gold, <#ff55aa>pink"),
+            gfx.textWithWordWrap(font, Component.literal(tr("book.enter_saves") + " &6gold, <#ff55aa>pink"),
                     x0, nameY() + 15, x1 - x0, FADED, false);
         }
 
@@ -1114,7 +1107,7 @@ public final class PetScreen extends Screen {
             gfx.pose().scale(3f, 3f);
             gfx.item(icon(pet), 0, 0);
             gfx.pose().popMatrix();
-            centered(gfx, Component.literal(pet.dead() ? "Gone" : "Far away"), x0, x1, cy + 24, pet.dead() ? RED : FADED);
+            centered(gfx, Component.literal(tr(pet.dead() ? "book.gone" : "status.far")), x0, x1, cy + 24, pet.dead() ? RED : FADED);
         }
     }
 
@@ -1129,25 +1122,25 @@ public final class PetScreen extends Screen {
                 y += 9;
             }
             y += 6;
-            fact(gfx, "Where", d.where(), x, y, w);
+            fact(gfx, tr("fact.where"), d.where(), x, y, w);
             return;
         }
         drawHearts(gfx, pet, x, y, w);
         y += ROW + 3;
         int limit = scarfY() - 6;
         String place = pet.place().isEmpty() ? d.where() : pet.place();
-        y = fact(gfx, "Doing", d.status(), x, y, w);
+        y = fact(gfx, tr("fact.doing"), d.status(), x, y, w);
         if (y + ROW <= limit) {
-            y = fact(gfx, "Where", place, x, y, w);
+            y = fact(gfx, tr("fact.where"), place, x, y, w);
         }
         if (!d.speed().isEmpty() && y + ROW <= limit) {
-            y = fact(gfx, "Speed", d.speed(), x, y, w);
+            y = fact(gfx, tr("fact.speed"), d.speed(), x, y, w);
         }
         if (!d.jump().isEmpty() && y + ROW <= limit) {
-            y = fact(gfx, "Jump", d.jump(), x, y, w);
+            y = fact(gfx, tr("fact.jump"), d.jump(), x, y, w);
         }
         if (!d.since().isEmpty() && y + ROW <= limit) {
-            fact(gfx, "With you", d.since(), x, y, w);
+            fact(gfx, tr("fact.with_you"), d.since(), x, y, w);
         }
         gfx.fill(x, scarfY() - 6, rightX1(), scarfY() - 5, RULE);
         drawScarf(gfx, d, x, w, mx, my);
@@ -1186,19 +1179,19 @@ public final class PetScreen extends Screen {
 
     private void drawScarf(GuiGraphicsExtractor gfx, PetsPacket.Details d, int x, int w, int mx, int my) {
         int y = scarfY();
-        gfx.text(font, "Scarf", x, y, FADED, false);
+        gfx.text(font, tr("book.scarf"), x, y, FADED, false);
         int vx = x + LABEL_W;
         if (!d.scarfFits()) {
-            gfx.text(font, Ui.fit(font, "Does not fit", w - LABEL_W), vx, y, FADED, false);
+            gfx.text(font, Ui.fit(font, tr("book.scarf_no_fit"), w - LABEL_W), vx, y, FADED, false);
             return;
         }
         if (d.scarf() < 0) {
-            gfx.text(font, Ui.fit(font, "None", w - LABEL_W), vx, y, FADED, false);
+            gfx.text(font, Ui.fit(font, tr("book.scarf_none"), w - LABEL_W), vx, y, FADED, false);
             if (mx >= vx && mx < x + w && my >= y - 1 && my < y + 10) {
                 gfx.setComponentTooltipForNextFrame(font, List.of(
-                        Component.literal("Give it a Pet Scarf"),
-                        Component.literal("Craft one from 3 wool and a string, dye it any colour,"),
-                        Component.literal("then right-click your pet with it.")), mx, my);
+                        Component.literal(tr("book.scarf_tip.1")),
+                        Component.literal(tr("book.scarf_tip.2")),
+                        Component.literal(tr("book.scarf_tip.3"))), mx, my);
             }
             return;
         }
@@ -1206,18 +1199,18 @@ public final class PetScreen extends Screen {
         gfx.fill(vx, y, vx + 16, y + 7, 0xFF000000 | d.scarf());
         boolean hot = overTakeOff(mx, my);
         int tx = takeOffX();
-        gfx.text(font, "Take off", tx, y, hot ? RED_HOT : RED, false);
-        gfx.fill(tx, y + 9, tx + font.width("Take off"), y + 10, hot ? RED_HOT : RED);
+        gfx.text(font, tr("book.take_off"), tx, y, hot ? RED_HOT : RED, false);
+        gfx.fill(tx, y + 9, tx + font.width(tr("book.take_off")), y + 10, hot ? RED_HOT : RED);
     }
 
     private void drawFood(GuiGraphicsExtractor gfx, PetsPacket.Details d, int mx, int my) {
         int x = rightX0();
         int y = feedY();
-        gfx.text(font, "Feed", x, y + 5, FADED, false);
+        gfx.text(font, tr("action.feed"), x, y + 5, FADED, false);
         int x0 = feedX();
         List<PetsPacket.Food> foods = d.foods();
         if (foods.isEmpty()) {
-            String text = d.entityId() < 0 ? "Too far away" : "Nothing it eats";
+            String text = tr(d.entityId() < 0 ? "book.too_far" : "book.nothing_it_eats");
             gfx.text(font, Ui.fit(font, text, rightX1() - x0), x0, y + 5, FADED, false);
             return;
         }
@@ -1231,9 +1224,8 @@ public final class PetScreen extends Screen {
             gfx.itemDecorations(font, stack, tx + 1, y + 1);
             if (i == hovered) {
                 gfx.fill(tx + 1, y + 1, tx + 17, y + 17, 0x80FFFFFF);
-                tip.add(Component.literal("Feed it ").append(stack.getHoverName()));
-                tip.add(Component.literal(!d.near() ? "Too far away. Call it first."
-                        : d.hungry() ? "Heals it, or gets it ready to breed" : "It is not hungry"));
+                tip.add(Component.translatable("betterpets.feed.with", stack.getHoverName()));
+                tip.add(Component.literal(tr(!d.near() ? "book.far" : d.hungry() ? "feed.heals" : "feed.not_hungry")));
             }
         }
         if (!tip.isEmpty()) {
@@ -1251,13 +1243,13 @@ public final class PetScreen extends Screen {
         int x = rightX0();
         int w = rightX1() - x;
         int y = pageTop() + 14;
-        gfx.text(font, Ui.fit(font, "Give " + pet.displayName().getString() + " to", w), x, y, INK, false);
+        gfx.text(font, Ui.fit(font, tr("book.give_to", pet.displayName().getString()), w), x, y, INK, false);
         List<PetsPacket.Person> players = state.players();
         if (players.isEmpty()) {
-            gfx.text(font, "Nobody else is online.", x, personTop(), FADED, false);
+            gfx.text(font, tr("book.nobody"), x, personTop(), FADED, false);
             return;
         }
-        gfx.text(font, "Click a name twice", x, y + 10, FADED, false);
+        gfx.text(font, Ui.fit(font, tr("book.click_twice"), w), x, y + 10, FADED, false);
         int hovered = personAt(mx, my);
         for (int i = 0; i < players.size() && personTop() + (i + 1) * ROW <= arrowY(); i++) {
             PetsPacket.Person person = players.get(i);
@@ -1266,7 +1258,7 @@ public final class PetScreen extends Screen {
             if (i == hovered || armed) {
                 gfx.fill(x - 2, ry - 2, rightX1() + 2, ry + ROW - 2, HOVER);
             }
-            String label = armed ? "Again to give: " + person.name() : person.name();
+            String label = armed ? tr("book.again_to_give", person.name()) : person.name();
             gfx.text(font, Ui.fit(font, label, w), x, ry, armed ? RED : INK, false);
         }
     }
@@ -1305,5 +1297,10 @@ public final class PetScreen extends Screen {
                 .flatMap(SpawnEggItem::byId)
                 .map(Holder::value)
                 .orElse(Items.NAME_TAG));
+    }
+
+    /** A text of this mod in the game's language. */
+    static String tr(String path, Object... args) {
+        return net.minecraft.client.resources.language.I18n.get("betterpets." + path, args);
     }
 }

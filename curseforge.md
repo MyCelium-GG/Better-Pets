@@ -33,6 +33,8 @@ Owning a dog, cat, parrot or horse, done right. `/pets` lists every pet you own 
 
 Install it on the server and on every client.
 
+In 11 languages: English, German, Spanish, French, Dutch, Brazilian Portuguese, Russian, Polish, Italian, Japanese and Simplified Chinese.
+
 Requires [Mycel](https://www.curseforge.com/minecraft/mc-mods/mycel): install it alongside this mod. Minecraft 26.1, 26.2 and 26.3 on Fabric, Forge and NeoForge, Java 25. On Fabric you also need Fabric API.
 
 Every setting and command is on the [wiki](https://wiki.mycelium-gg.org/betterpets/).

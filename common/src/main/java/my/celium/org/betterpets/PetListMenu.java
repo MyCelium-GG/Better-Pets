@@ -17,7 +17,7 @@ final class PetListMenu extends PetGui {
 
     static void open(ServerPlayer player) {
         int rows = PetBrain.gridRows(PetTracker.STORE.pets(player.getUUID()).size());
-        PetGui.open(player, TextUtil.body("Your pets"), id -> new PetListMenu(id, player, rows));
+        PetGui.open(player, TextUtil.body(PetText.t(player, "your_pets")), id -> new PetListMenu(id, player, rows));
     }
 
     @Override
@@ -32,7 +32,7 @@ final class PetListMenu extends PetGui {
         List<Component> lore = new ArrayList<>();
         lore.add(PetText.species(pet).withStyle(style -> style.withColor(TextUtil.MUTED)));
         if (pet.dead) {
-            lore.add(TextUtil.hex("Died " + PetBrain.ago(System.currentTimeMillis() - pet.lastSeen), PetText.DEAD));
+            lore.add(TextUtil.hex(PetText.t(viewer, "died_ago_cap", PetText.ago(viewer, System.currentTimeMillis() - pet.lastSeen)), PetText.DEAD));
         } else {
             lore.add(TextUtil.hex("♥ ", PetText.HEART).append(TextUtil.body(PetBrain.health(pet.health, pet.maxHealth))));
             lore.add(TextUtil.body(PetsCommand.placeText(viewer, pet)));

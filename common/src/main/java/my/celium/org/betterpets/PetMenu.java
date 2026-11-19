@@ -110,14 +110,14 @@ final class PetMenu extends PetGui {
         Entity entity = PetTracker.loaded(petId);
         put(INFO_SLOT, info(pet, entity));
         healthBar(pet, entity);
-        List<Button> actions = pet.dead ? List.of(forgetButton(pet, "Remove it from your list")) : actions(pet, entity);
+        List<Button> actions = pet.dead ? List.of(forgetButton(pet, PetText.t(viewer, "button.forget.tip"))) : actions(pet, entity);
         int[] columns = PetBrain.centered(actions.size());
         for (int i = 0; i < columns.length; i++) {
             button(ACTION_ROW + columns[i], actions.get(i).icon(), actions.get(i).action());
         }
-        button(BACK_SLOT, icon(Items.ARROW, TextUtil.hex("All pets", PetText.BUTTON)),
+        button(BACK_SLOT, icon(Items.ARROW, TextUtil.hex(PetText.t(viewer, "menu.all_pets"), PetText.BUTTON)),
                 () -> PetListMenu.open(viewer));
-        button(CLOSE_SLOT, icon(Items.BARRIER, TextUtil.hex("Close", PetText.DEAD)), this::close);
+        button(CLOSE_SLOT, icon(Items.BARRIER, TextUtil.hex(PetText.t(viewer, "menu.close"), PetText.DEAD)), this::close);
     }
 
     private record Button(ItemStack icon, Runnable action) {
@@ -130,38 +130,38 @@ final class PetMenu extends PetGui {
         List<Component> lore = new ArrayList<>();
         lore.add(PetText.species(pet).withStyle(style -> style.withColor(TextUtil.MUTED)));
         if (pet.dead) {
-            lore.add(TextUtil.hex(pet.deathMessage == null ? "Died" : pet.deathMessage, PetText.DEAD));
-            lore.add(TextUtil.muted(PetBrain.ago(now - pet.lastSeen)));
+            lore.add(TextUtil.hex(pet.deathMessage == null ? PetText.t(viewer, "died") : pet.deathMessage, PetText.DEAD));
+            lore.add(TextUtil.muted(PetText.ago(viewer, now - pet.lastSeen)));
         } else {
-            lore.add(TextUtil.body(status(pet, entity)));
+            lore.add(TextUtil.body(status(viewer, pet, entity)));
         }
         lore.add(TextUtil.empty());
-        lore.add(TextUtil.muted("Where  ").append(TextUtil.hex(PetText.blockCoords(pet.x, pet.y, pet.z), PetText.VALUE)));
-        lore.add(TextUtil.muted("In the  ").append(TextUtil.body(PetBrain.dimensionName(pet.dimension))));
+        lore.add(TextUtil.muted(PetText.t(viewer, "fact.where") + "  ").append(TextUtil.hex(PetText.blockCoords(pet.x, pet.y, pet.z), PetText.VALUE)));
+        lore.add(TextUtil.muted(PetText.t(viewer, "fact.dimension") + "  ").append(TextUtil.body(PetText.dimension(viewer, pet.dimension))));
         if (entity == null && !pet.dead) {
-            lore.add(TextUtil.muted("Seen  ").append(TextUtil.body(PetBrain.ago(now - pet.lastSeen))));
+            lore.add(TextUtil.muted(PetText.t(viewer, "fact.seen") + "  ").append(TextUtil.body(PetText.ago(viewer, now - pet.lastSeen))));
         }
         if (pet.firstSeen > 0) {
-            lore.add(TextUtil.muted("Since  ").append(TextUtil.body(PetBrain.ago(now - pet.firstSeen))));
+            lore.add(TextUtil.muted(PetText.t(viewer, "fact.since") + "  ").append(TextUtil.body(PetText.ago(viewer, now - pet.firstSeen))));
         }
         if (entity instanceof AbstractHorse horse) {
             lore.add(TextUtil.empty());
-            lore.add(TextUtil.muted("Speed  ").append(TextUtil.hex(PetBrain.horseSpeed(
+            lore.add(TextUtil.muted(PetText.t(viewer, "fact.speed") + "  ").append(TextUtil.hex(PetText.speed(viewer,
                     horse.getAttributeValue(Attributes.MOVEMENT_SPEED)), PetText.VALUE)));
-            lore.add(TextUtil.muted("Jump  ").append(TextUtil.hex(PetBrain.horseJump(
+            lore.add(TextUtil.muted(PetText.t(viewer, "fact.jump") + "  ").append(TextUtil.hex(PetText.jump(viewer,
                     horse.getAttributeValue(Attributes.JUMP_STRENGTH)), PetText.VALUE)));
         }
         return named(new ItemStack(pet.dead ? Items.SKELETON_SKULL : egg(pet)), PetText.name(pet), lore);
     }
 
-    static String status(PetRecord pet, Entity entity) {
+    static String status(net.minecraft.world.entity.player.Player player, PetRecord pet, Entity entity) {
         if (entity == null) {
-            return "Far away";
+            return PetText.t(player, "status.far");
         }
         if (entity instanceof LivingEntity living && living.isBaby()) {
-            return pet.sitting ? "Baby, sitting" : "Baby";
+            return PetText.t(player, pet.sitting ? "status.baby_sitting" : "status.baby");
         }
-        return pet.sitting ? "Sitting" : pet.leashed ? "On a lead" : "Up and about";
+        return PetText.t(player, pet.sitting ? "status.sitting" : pet.leashed ? "status.leashed" : "status.about");
     }
 
     /** The species' spawn egg, or a name tag for a modded pet without one. */
@@ -193,42 +193,42 @@ final class PetMenu extends PetGui {
             actions.add(sitButton(pet, entity));
         }
         if (entity != null && PetCare.hasInventory(entity)) {
-            actions.add(new Button(icon(Items.CHEST, TextUtil.hex("Inventory", PetText.NAME),
-                    TextUtil.muted("Saddle, armor and what it carries"), nearbyHint(entity)),
+            actions.add(new Button(icon(Items.CHEST, TextUtil.hex(PetText.t(viewer, "action.inventory"), PetText.NAME),
+                    TextUtil.muted(PetText.t(viewer, "action.inventory.tip")), nearbyHint(entity)),
                     () -> {
                         if (checkNearby(pet, entity)) {
                             PetCare.openInventory(viewer, entity);
                         }
                     }));
         }
-        actions.add(new Button(icon(Items.COMPASS, TextUtil.hex("Find", PetText.NAME),
-                TextUtil.muted("Make it glow and point the way")), () -> {
+        actions.add(new Button(icon(Items.COMPASS, TextUtil.hex(PetText.t(viewer, "button.find"), PetText.NAME),
+                TextUtil.muted(PetText.t(viewer, "button.find.tip"))), () -> {
                     close();
                     PetsCommand.find(viewer, pet);
                 }));
         if (BetterPetsMod.allowCall.get()) {
-            actions.add(new Button(icon(Items.BELL, TextUtil.hex("Call", PetText.NAME),
-                    TextUtil.muted("Teleport it to you")), () -> {
+            actions.add(new Button(icon(Items.BELL, TextUtil.hex(PetText.t(viewer, "button.call"), PetText.NAME),
+                    TextUtil.muted(PetText.t(viewer, "button.call.tip"))), () -> {
                         close();
                         PetsCommand.call(viewer, pet);
                     }));
         }
         if (BetterPetsMod.allowRename.get()) {
-            actions.add(new Button(icon(Items.NAME_TAG, TextUtil.hex("Rename", PetText.NAME),
-                    TextUtil.muted("Colors work too")), () -> openRename(pet)));
+            actions.add(new Button(icon(Items.NAME_TAG, TextUtil.hex(PetText.t(viewer, "action.rename"), PetText.NAME),
+                    TextUtil.muted(PetText.t(viewer, "action.rename.tip"))), () -> openRename(pet)));
         }
         if (BetterPetsMod.allowGive.get()) {
-            actions.add(new Button(icon(Items.POPPY, TextUtil.hex("Give away", PetText.NAME),
-                    TextUtil.muted("Hand it to another player")), () -> PetGiveMenu.open(viewer, pet)));
+            actions.add(new Button(icon(Items.POPPY, TextUtil.hex(PetText.t(viewer, "action.give"), PetText.NAME),
+                    TextUtil.muted(PetText.t(viewer, "action.give.tip"))), () -> PetGiveMenu.open(viewer, pet)));
         }
         if (entity == null) {
-            actions.add(forgetButton(pet, "Lost it? Remove it from your list"));
+            actions.add(forgetButton(pet, PetText.t(viewer, "action.forget.lost")));
         }
         return actions;
     }
 
     private Button forgetButton(PetRecord pet, String hint) {
-        return new Button(icon(Items.LAVA_BUCKET, TextUtil.hex("Forget", PetText.DEAD), TextUtil.muted(hint)), () -> {
+        return new Button(icon(Items.LAVA_BUCKET, TextUtil.hex(PetText.t(viewer, "button.forget"), PetText.DEAD), TextUtil.muted(hint)), () -> {
             close();
             PetsCommand.forget(viewer, pet);
         });
@@ -240,16 +240,16 @@ final class PetMenu extends PetGui {
         ItemStack icon;
         if (slot < 0) {
             icon = new ItemStack(Items.BOWL);
-            lore.add(TextUtil.muted(entity == null ? "It is too far away" : "You carry nothing it eats"));
+            lore.add(TextUtil.muted(PetText.t(viewer, entity == null ? "feed.far" : "feed.nothing")));
         } else {
             ItemStack food = viewer.getInventory().getItem(slot);
             icon = new ItemStack(food.getItem(), food.getCount());
-            lore.add(TextUtil.muted("Feed it ").append(food.getHoverName().copy()
-                    .withStyle(style -> style.withColor(PetText.VALUE))));
-            lore.add(TextUtil.muted(PetCare.isHungry(entity) ? "Heals it, or gets it ready to breed" : "It is not hungry"));
+            lore.add(TextUtil.coloredHex(PetText.c(viewer, "feed.with", food.getHoverName().copy()
+                    .withStyle(style -> style.withColor(PetText.VALUE))), TextUtil.MUTED));
+            lore.add(TextUtil.muted(PetText.t(viewer, PetCare.isHungry(entity) ? "feed.heals" : "feed.not_hungry")));
             lore.add(nearbyHint(entity));
         }
-        return new Button(named(icon, TextUtil.hex("Feed", PetText.NAME), lore), () -> feed(pet));
+        return new Button(named(icon, TextUtil.hex(PetText.t(viewer, "action.feed"), PetText.NAME), lore), () -> feed(pet));
     }
 
     private void feed(PetRecord pet) {
@@ -259,17 +259,17 @@ final class PetMenu extends PetGui {
         }
         int slot = PetCare.foodSlot(viewer, entity);
         if (slot < 0) {
-            viewer.sendSystemMessage(PetText.fail("You carry nothing ", PetText.name(pet), " eats."), true);
+            viewer.sendSystemMessage(PetText.fail(PetText.c(viewer, "feed.nothing_for", PetText.name(pet))), true);
         } else if (!PetCare.isHungry(entity) || !PetCare.feed(viewer, entity, slot)) {
-            viewer.sendSystemMessage(PetText.fail(PetText.name(pet), " is not hungry."), true);
+            viewer.sendSystemMessage(PetText.fail(PetText.c(viewer, "feed.not_hungry_pet", PetText.name(pet))), true);
         }
     }
 
     private Button sitButton(PetRecord pet, Entity entity) {
         boolean sitting = entity instanceof TamableAnimal tamable && tamable.isOrderedToSit();
         return new Button(icon(sitting ? Items.FEATHER : Items.OAK_STAIRS,
-                TextUtil.hex(sitting ? "Stand up" : "Sit", PetText.NAME),
-                TextUtil.muted(sitting ? "It follows you again" : "It stays right here"), nearbyHint(entity)),
+                TextUtil.hex(PetText.t(viewer, sitting ? "action.stand" : "action.sit"), PetText.NAME),
+                TextUtil.muted(PetText.t(viewer, sitting ? "action.stand.tip" : "action.sit.tip")), nearbyHint(entity)),
                 () -> {
                     if (checkNearby(pet, entity) && entity instanceof TamableAnimal tamable) {
                         PetCare.toggleSit(tamable);
@@ -283,14 +283,14 @@ final class PetMenu extends PetGui {
     }
 
     private MutableComponent nearbyHint(Entity entity) {
-        return isNearby(entity) ? TextUtil.empty() : TextUtil.hex("Too far away, call it first", PetText.DEAD);
+        return isNearby(entity) ? TextUtil.empty() : TextUtil.hex(PetText.t(viewer, "far_call_first_short"), PetText.DEAD);
     }
 
     private boolean checkNearby(PetRecord pet, Entity entity) {
         if (isNearby(entity)) {
             return true;
         }
-        viewer.sendSystemMessage(PetText.fail(PetText.name(pet), " is too far away. Call it first."), true);
+        viewer.sendSystemMessage(PetText.fail(PetText.c(viewer, "far_call_first", PetText.name(pet))), true);
         return false;
     }
 
@@ -300,17 +300,17 @@ final class PetMenu extends PetGui {
         close();
         RENAMING.add(viewer.getUUID());
         String initial = pet.nameFormat != null ? pet.nameFormat : pet.customName() != null ? pet.customName() : "";
-        Input input = new Input(NAME_INPUT, new TextInput(250, TextUtil.body("Name"), true, initial,
+        Input input = new Input(NAME_INPUT, new TextInput(250, TextUtil.body(PetText.t(viewer, "button.name")), true, initial,
                 PetBrain.MAX_TYPED_LENGTH, Optional.empty()));
         CommonDialogData data = new CommonDialogData(TextUtil.empty().append(PetText.name(pet)), Optional.empty(), true,
                 false, DialogAction.CLOSE,
-                List.of(new PlainMessage(TextUtil.muted("Colors work: &6Gold, <#ff55aa>pink, <gradient:gold:red>fire"), 250)),
+                List.of(new PlainMessage(TextUtil.muted(PetText.t(viewer, "colors_work") + " &6Gold, <#ff55aa>pink, <gradient:gold:red>fire"), 250)),
                 List.of(input));
         ParsedTemplate template = ParsedTemplate.CODEC.parse(JsonOps.INSTANCE,
                 new JsonPrimitive("pets name " + pet.id + " $(" + NAME_INPUT + ")")).getOrThrow();
-        ActionButton done = new ActionButton(new CommonButtonData(TextUtil.body("Done"), 100),
+        ActionButton done = new ActionButton(new CommonButtonData(Component.translatable("gui.done"), 100),
                 Optional.of(new CommandTemplate(template)));
-        ActionButton cancel = new ActionButton(new CommonButtonData(TextUtil.body("Cancel"), 100),
+        ActionButton cancel = new ActionButton(new CommonButtonData(Component.translatable("gui.cancel"), 100),
                 Optional.of(new StaticAction(new ClickEvent.RunCommand("/pets menu " + pet.id))));
         viewer.openDialog(Holder.direct(new ConfirmationDialog(data, done, cancel)));
     }

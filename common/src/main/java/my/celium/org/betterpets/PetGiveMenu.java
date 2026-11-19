@@ -23,7 +23,7 @@ final class PetGiveMenu extends PetGui {
 
     static void open(ServerPlayer player, PetRecord pet) {
         int rows = PetBrain.gridRows(others(player).size());
-        PetGui.open(player, TextUtil.body("Give ").append(PetText.name(pet)),
+        PetGui.open(player, TextUtil.coloredHex(PetText.c(player, "give.title", PetText.name(pet)), TextUtil.BODY),
                 id -> new PetGiveMenu(id, player, pet, rows));
     }
 
@@ -37,10 +37,10 @@ final class PetGiveMenu extends PetGui {
     protected void render() {
         List<ServerPlayer> others = others(viewer);
         if (others.isEmpty()) {
-            put(4, icon(Items.BARRIER, TextUtil.muted("Nobody else is online")));
+            put(4, icon(Items.BARRIER, TextUtil.muted(PetText.t(viewer, "give.nobody"))));
         }
         grid(others, this::head, this::click);
-        button(getContainer().getContainerSize() - 5, icon(Items.ARROW, TextUtil.hex("Back", PetText.BUTTON)),
+        button(getContainer().getContainerSize() - 5, icon(Items.ARROW, TextUtil.hex(PetText.t(viewer, "menu.back"), PetText.BUTTON)),
                 () -> PetMenu.open(viewer, pet));
     }
 
@@ -49,8 +49,8 @@ final class PetGiveMenu extends PetGui {
         head.set(DataComponents.PROFILE, ResolvableProfile.createResolved(target.getGameProfile()));
         boolean confirm = target.getUUID().equals(armed);
         return named(head, target.getDisplayName(), List.of(confirm
-                ? TextUtil.hex("Click again to give it away", PetText.DEAD)
-                : TextUtil.muted("Click to choose")));
+                ? TextUtil.hex(PetText.t(viewer, "give.again"), PetText.DEAD)
+                : TextUtil.muted(PetText.t(viewer, "give.choose"))));
     }
 
     private void click(ServerPlayer target) {

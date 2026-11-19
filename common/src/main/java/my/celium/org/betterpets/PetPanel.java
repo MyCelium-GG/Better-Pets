@@ -193,19 +193,19 @@ public final class PetPanel {
             }
             case FEED -> {
                 if (!PetCare.isNear(player, entity)) {
-                    return Result.fail(name + " is too far away. Call it first.");
+                    return Result.fail(PetText.t(player, "far_call_first", name));
                 }
                 if (!PetCare.canFeedFrom(player, entity, packet.slot())) {
-                    return Result.fail(name + " doesn't eat that.");
+                    return Result.fail(PetText.t(player, "feed.not_food", name));
                 }
                 if (!PetCare.isHungry(entity) || !PetCare.feed(player, entity, packet.slot())) {
-                    return Result.fail(name + " is not hungry.");
+                    return Result.fail(PetText.t(player, "feed.not_hungry_pet", name));
                 }
-                return Result.ok(name + " enjoyed that!");
+                return Result.ok(PetText.t(player, "feed.done", name));
             }
             case SIT -> {
                 if (!PetCare.isNear(player, entity)) {
-                    return Result.fail(name + " is too far away. Call it first.");
+                    return Result.fail(PetText.t(player, "far_call_first", name));
                 }
                 if (PetCare.canSit(entity) && entity instanceof TamableAnimal tamable) {
                     PetCare.toggleSit(tamable);
@@ -215,7 +215,7 @@ public final class PetPanel {
             }
             case INVENTORY -> {
                 if (!PetCare.isNear(player, entity)) {
-                    return Result.fail(name + " is too far away. Call it first.");
+                    return Result.fail(PetText.t(player, "far_call_first", name));
                 }
                 OPEN.remove(id);
                 PetCare.openInventory(player, entity);
@@ -234,7 +234,7 @@ public final class PetPanel {
                 return Result.NONE;
             }
             case RENAME -> {
-                return rename(pet, packet.text());
+                return rename(player, pet, packet.text());
             }
             case GIVE -> {
                 return give(player, pet, packet.text());
@@ -244,16 +244,16 @@ public final class PetPanel {
             }
             case SCARF_OFF -> {
                 if (!PetCare.isNear(player, entity)) {
-                    return Result.fail(name + " is too far away. Call it first.");
+                    return Result.fail(PetText.t(player, "far_call_first", name));
                 }
-                return Scarves.takeOff(player, entity) ? Result.ok(name + "'s scarf is back in your inventory.")
+                return Scarves.takeOff(player, entity) ? Result.ok(PetText.t(player, "scarf.back", name))
                         : Result.NONE;
             }
             case FORGET -> {
                 if (PetsCommand.forget(player, pet) > 0) {
-                    return Result.ok(name + " was removed from your list.");
+                    return Result.ok(PetText.t(player, "forget.done", name));
                 }
-                return Result.fail(name + " is right here, so it stays on the list.");
+                return Result.fail(PetText.t(player, "forget.here_short", name));
             }
             default -> {
                 return Result.NONE;
@@ -261,16 +261,16 @@ public final class PetPanel {
         }
     }
 
-    private static Result rename(PetRecord pet, String raw) {
+    private static Result rename(ServerPlayer player, PetRecord pet, String raw) {
         if (!BetterPetsMod.allowRename.get() || pet.dead) {
             return Result.NONE;
         }
         String typed = PetsCommand.validName(raw);
         if (typed == null) {
-            return Result.fail("A name needs 1 to " + PetBrain.MAX_NAME_LENGTH + " letters (colors don't count).");
+            return Result.fail(PetText.t(player, "name.length", PetBrain.MAX_NAME_LENGTH));
         }
-        Component error = PetTracker.rename(pet, typed);
-        return error != null ? Result.fail(error.getString()) : Result.ok("Now called " + PetNameFormat.plain(typed) + ".");
+        Component error = PetTracker.rename(player, pet, typed);
+        return error != null ? Result.fail(error.getString()) : Result.ok(PetText.t(player, "name.now", PetNameFormat.plain(typed)));
     }
 
     private static Result give(ServerPlayer player, PetRecord pet, String target) {
@@ -284,12 +284,12 @@ public final class PetPanel {
             }
         }
         if (to == null) {
-            return Result.fail("That player has left.");
+            return Result.fail(PetText.t(player, "give.left"));
         }
         String name = PetText.name(pet).getString();
         return PetsCommand.give(player, pet, to) > 0
-                ? Result.ok(name + " now belongs to " + to.getName().getString() + ".")
-                : Result.fail(name + " is too far away. Go and get it first.");
+                ? Result.ok(PetText.t(player, "give.done", name, to.getName().getString()))
+                : Result.fail(PetText.t(player, "give.far_short", name));
     }
 
     // ---------------------------------------------------------------- what to show
@@ -340,7 +340,7 @@ public final class PetPanel {
 
     private static Result setting(ServerPlayer player, String text) {
         if (!canEditSettings(player)) {
-            return Result.fail("Only operators can change the settings.");
+            return Result.fail(PetText.t(player, "settings.ops"));
         }
         int eq = text.indexOf('=');
         ConfigValue<?> value = eq < 0 || BetterPetsMod.config == null ? null : BetterPetsMod.config.find(text.substring(0, eq));
@@ -351,13 +351,13 @@ public final class PetPanel {
             } else if (value instanceof ConfigValue.IntegerValue i) {
                 i.set(Math.clamp(Integer.parseInt(raw), i.min(), i.max()));
             } else {
-                return Result.fail("Unknown setting.");
+                return Result.fail(PetText.t(player, "settings.unknown"));
             }
         } catch (NumberFormatException e) {
-            return Result.fail("That is not a number.");
+            return Result.fail(PetText.t(player, "settings.nan"));
         }
         BetterPetsMod.config.save();
-        return Result.ok("Saved.");
+        return Result.ok(PetText.t(player, "settings.saved"));
     }
 
     private static PetsPacket.Pet row(ServerPlayer player, PetRecord pet) {
@@ -378,16 +378,16 @@ public final class PetPanel {
         String speed = "";
         String jump = "";
         if (entity instanceof AbstractHorse horse) {
-            speed = PetBrain.horseSpeed(horse.getAttributeValue(Attributes.MOVEMENT_SPEED));
-            jump = PetBrain.horseJump(horse.getAttributeValue(Attributes.JUMP_STRENGTH));
+            speed = PetText.speed(player, horse.getAttributeValue(Attributes.MOVEMENT_SPEED));
+            jump = PetText.jump(player, horse.getAttributeValue(Attributes.JUMP_STRENGTH));
         }
         boolean sitting = entity instanceof TamableAnimal tamable && tamable.isOrderedToSit();
         return new PetsPacket.Details(entity == null ? -1 : entity.getId(), near,
                 entity != null && PetCare.isHungry(entity), entity != null && PetCare.canSit(entity), sitting,
-                entity != null && PetCare.hasInventory(entity), PetMenu.status(pet, entity),
-                PetText.blockCoords(pet.x, pet.y, pet.z) + " in the " + PetBrain.dimensionName(pet.dimension),
-                pet.firstSeen > 0 ? PetBrain.ago(now - pet.firstSeen) : "",
-                pet.dead ? (pet.deathMessage == null ? "Died" : pet.deathMessage) + ", " + PetBrain.ago(now - pet.lastSeen) : "",
+                entity != null && PetCare.hasInventory(entity), PetMenu.status(player, pet, entity),
+                PetText.blockCoords(pet.x, pet.y, pet.z) + " " + PetText.inDimension(player, pet.dimension),
+                pet.firstSeen > 0 ? PetText.ago(player, now - pet.firstSeen) : "",
+                pet.dead ? (pet.deathMessage == null ? PetText.t(player, "died") : pet.deathMessage) + ", " + PetText.ago(player, now - pet.lastSeen) : "",
                 speed, jump, entity == null ? List.of() : foods(player, entity),
                 entity == null ? -1 : Scarves.color(entity), entity != null && Scarves.fits(entity));
     }

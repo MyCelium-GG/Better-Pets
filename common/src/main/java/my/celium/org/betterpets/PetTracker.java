@@ -234,11 +234,12 @@ public final class PetTracker {
         PetStats.count("pet_death");
         ServerPlayer player = server.getPlayerList().getPlayer(owner);
         if (player != null && BetterPetsMod.deathAlerts.get()) {
+            String cause = deathCause(pet);
             player.sendSystemMessage(PetText.fail(PetText.name(pet),
-                    TextUtil.hex(deathCause(pet), PetText.DEAD),
-                    PetText.sep(), PetText.coords(pet.x, pet.y, pet.z),
-                    TextUtil.muted(" in the " + PetBrain.dimensionName(pet.dimension) + "   "),
-                    PetText.button("Show pets", "/pets", "Show your pets")));
+                    TextUtil.hex(cause == null ? " " + PetText.t(player, "died_short") : cause, PetText.DEAD),
+                    PetText.sep(), PetText.coords(player, pet.x, pet.y, pet.z),
+                    TextUtil.muted(" " + PetText.inDimension(player, pet.dimension) + "   "),
+                    PetText.button(PetText.t(player, "button.show"), "/pets", PetText.t(player, "button.show.tip"))));
         }
     }
 
@@ -253,7 +254,7 @@ public final class PetTracker {
         if (message != null && !plain.isEmpty() && message.startsWith(plain + " ")) {
             return message.substring(plain.length());
         }
-        return " died";
+        return null;
     }
 
     /**
@@ -337,8 +338,8 @@ public final class PetTracker {
             }
             if (sendCompass(player, pet)) {
                 it.remove();
-                player.sendSystemMessage(PetText.msg(TextUtil.hex("Found ", PetText.GOOD),
-                        PetText.name(pet), TextUtil.hex("!", PetText.GOOD)), true);
+                player.sendSystemMessage(PetText.c(player, "find.found", PetText.name(pet))
+                        .withStyle(style -> style.withColor(PetText.GOOD)), true);
             }
         }
     }
@@ -351,8 +352,8 @@ public final class PetTracker {
         double z = entity != null ? entity.getZ() : pet.z;
         String dimension = entity != null ? entity.level().dimension().identifier().toString() : pet.dimension;
         if (!player.level().dimension().identifier().toString().equals(dimension)) {
-            player.sendSystemMessage(PetText.msg(PetText.name(pet), " is in the ",
-                    PetText.value(PetBrain.dimensionName(dimension))), true);
+            player.sendSystemMessage(PetText.msg(PetText.c(player, "find.other_dim", PetText.name(pet),
+                    PetText.value(PetText.dimension(player, dimension)))), true);
             return false;
         }
         double dx = x - player.getX();
@@ -369,7 +370,7 @@ public final class PetTracker {
             line.append(TextUtil.muted(dy > 0 ? "  \u25b2" + dy : "  \u25bc" + (-dy)));
         }
         if (entity == null) {
-            line.append(TextUtil.muted("  last seen here"));
+            line.append(TextUtil.muted("  " + PetText.t(player, "find.last_seen")));
         }
         player.sendSystemMessage(line, true);
         return false;
@@ -381,12 +382,11 @@ public final class PetTracker {
     public static Component call(ServerPlayer player, PetRecord pet, String argument) {
         Entity entity = loaded(pet.id);
         if (entity == null) {
-            return PetText.msg(PetText.name(pet), " is too far away to hear you. ",
-                    PetText.button("Find", "/pets find " + argument, "Point the way to it"));
+            return PetText.msg(PetText.c(player, "call.far", PetText.name(pet)), " ",
+                    PetText.button(PetText.t(player, "button.find"), "/pets find " + argument, PetText.t(player, "button.find.tip")));
         }
         if (entity.level() != player.level()) {
-            return PetText.msg(PetText.name(pet), " is in the ", PetText.value(PetBrain.dimensionName(pet.dimension)),
-                    " and can't hear you from here.");
+            return PetText.msg(PetText.c(player, "call.other_dim", PetText.name(pet), PetText.value(PetText.dimension(player, pet.dimension))));
         }
         if (entity instanceof Leashable leashable && leashable.isLeashed()
                 && leashable.getLeashHolder() != player) {
@@ -410,14 +410,14 @@ public final class PetTracker {
     public static Component give(ServerPlayer from, PetRecord pet, ServerPlayer target) {
         Entity entity = loaded(pet.id);
         if (entity == null) {
-            return PetText.msg(PetText.name(pet), " is too far away. Go and get it first, then hand it over.");
+            return PetText.msg(PetText.c(from, "give.far", PetText.name(pet)));
         }
         if (entity instanceof TamableAnimal tamable) {
             tamable.setOwner(target);
         } else if (entity instanceof net.minecraft.world.entity.animal.equine.AbstractHorse horse) {
             horse.setOwner(target);
         } else {
-            return PetText.msg(PetText.name(pet), " can't change owner.");
+            return PetText.msg(PetText.c(from, "give.cant", PetText.name(pet)));
         }
         STORE.remove(from.getUUID(), pet.id);
         update(target.getUUID(), entity);
@@ -429,10 +429,10 @@ public final class PetTracker {
      * Renames a loaded pet to {@code typed}, with its {@code &} codes and
      * MiniMessage tags applied. Returns why it could not, or {@code null}.
      */
-    public static Component rename(PetRecord pet, String typed) {
+    public static Component rename(ServerPlayer player, PetRecord pet, String typed) {
         Entity entity = loaded(pet.id);
         if (entity == null) {
-            return PetText.msg(PetText.name(pet), " is too far away to hear its new name. Go closer and try again.");
+            return PetText.msg(PetText.c(player, "name.far", PetText.name(pet)));
         }
         entity.setCustomName(PetNameFormat.parse(typed));
         if (entity instanceof net.minecraft.world.entity.Mob mob) {

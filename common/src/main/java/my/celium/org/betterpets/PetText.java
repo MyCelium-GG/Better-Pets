@@ -117,13 +117,78 @@ public final class PetText {
     }
 
     /** {@code text} that shows the pet's coordinates on hover and copies them when clicked. */
-    public static MutableComponent place(String text, PetRecord pet) {
+    public static MutableComponent place(net.minecraft.world.entity.player.Player player, String text, PetRecord pet) {
         String xyz = blockCoords(pet.x, pet.y, pet.z);
         return TextUtil.body(text).withStyle(style -> style
                 .withClickEvent(new ClickEvent.CopyToClipboard(xyz))
                 .withHoverEvent(new HoverEvent.ShowText(TextUtil.hex(xyz, VALUE)
-                        .append(TextUtil.muted(" in the " + PetBrain.dimensionName(pet.dimension)))
-                        .append(dim("\nClick to copy")))));
+                        .append(TextUtil.muted(" " + inDimension(player, pet.dimension)))
+                        .append(dim("\n" + t(player, "click_to_copy"))))));
+    }
+
+    // ---------------------------------------------------------------- translations
+
+    /** A message in the player's language (assets/betterpets/lang). */
+    public static String t(net.minecraft.world.entity.player.Player player, String key, Object... args) {
+        return BetterPetsMod.LANG.get(player, key, args);
+    }
+
+    /** Like {@link #t} but keeps the style of component arguments, like a pet's coloured name. */
+    public static MutableComponent c(net.minecraft.world.entity.player.Player player, String key, Object... args) {
+        return BetterPetsMod.LANG.text(player, key, args);
+    }
+
+    /** "just now", "5 min ago", "3 h ago", "2 d ago" in the player's language. */
+    public static String ago(net.minecraft.world.entity.player.Player player, long millis) {
+        long minutes = Math.max(0, millis) / 60_000L;
+        if (minutes < 1) {
+            return t(player, "ago.now");
+        }
+        if (minutes < 60) {
+            return t(player, "ago.min", minutes);
+        }
+        long hours = minutes / 60;
+        return hours < 48 ? t(player, "ago.hours", hours) : t(player, "ago.days", hours / 24);
+    }
+
+    /** "the Nether", "the Overworld", or the dimension's path for modded ones. */
+    public static String dimension(net.minecraft.world.entity.player.Player player, String dimension) {
+        if (dimension == null) {
+            return t(player, "dim.unknown");
+        }
+        return switch (dimension) {
+            case "minecraft:overworld" -> t(player, "dim.overworld");
+            case "minecraft:the_nether" -> t(player, "dim.nether");
+            case "minecraft:the_end" -> t(player, "dim.end");
+            default -> PetBrain.dimensionName(dimension);
+        };
+    }
+
+    /** A horse's speed, "10.5 blocks/s", in the player's language. */
+    public static String speed(net.minecraft.world.entity.player.Player player, double attribute) {
+        return t(player, "horse.speed", String.format(java.util.Locale.ROOT, "%.1f", attribute * 42.16));
+    }
+
+    /** A horse's jump height, "3.4 blocks", in the player's language. */
+    public static String jump(net.minecraft.world.entity.player.Player player, double attribute) {
+        return t(player, "horse.jump", PetBrain.horseJump(attribute).replace(" blocks", ""));
+    }
+
+    /** A compass letter ("NE") in the player's language. */
+    public static String compass(net.minecraft.world.entity.player.Player player, String english) {
+        String[] from = {"S", "SW", "W", "NW", "N", "NE", "E", "SE"};
+        String[] to = t(player, "compass").split(",");
+        for (int i = 0; i < from.length && to.length == from.length; i++) {
+            if (from[i].equals(english)) {
+                return to[i].trim();
+            }
+        }
+        return english;
+    }
+
+    /** "in the Nether". */
+    public static String inDimension(net.minecraft.world.entity.player.Player player, String dimension) {
+        return t(player, "where.in", dimension(player, dimension));
     }
 
     static String blockCoords(double x, double y, double z) {
@@ -131,11 +196,11 @@ public final class PetText {
     }
 
     /** {@code x y z} that copies itself to the clipboard when clicked. */
-    public static MutableComponent coords(double x, double y, double z) {
+    public static MutableComponent coords(net.minecraft.world.entity.player.Player player, double x, double y, double z) {
         String text = blockCoords(x, y, z);
         return TextUtil.hex(text, VALUE).withStyle(style -> style
                 .withUnderlined(true)
                 .withClickEvent(new ClickEvent.CopyToClipboard(text))
-                .withHoverEvent(new HoverEvent.ShowText(TextUtil.muted("Click to copy"))));
+                .withHoverEvent(new HoverEvent.ShowText(TextUtil.muted(t(player, "click_to_copy")))));
     }
 }

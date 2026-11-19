@@ -150,10 +150,10 @@ abstract class PetGui extends ChestMenu {
             button(i, icon.apply(entry), () -> action.accept(entry));
         }
         if (page > 0) {
-            button(perPage, icon(Items.ARROW, TextUtil.hex("Previous page", PetText.BUTTON)), () -> page--);
+            button(perPage, icon(Items.ARROW, TextUtil.hex(PetText.t(viewer, "menu.previous"), PetText.BUTTON)), () -> page--);
         }
         if (page < pages - 1) {
-            button(perPage + 8, icon(Items.ARROW, TextUtil.hex("Next page", PetText.BUTTON),
+            button(perPage + 8, icon(Items.ARROW, TextUtil.hex(PetText.t(viewer, "menu.next"), PetText.BUTTON),
                     PetText.dim((page + 1) + " / " + pages)), () -> page++);
         }
     }
