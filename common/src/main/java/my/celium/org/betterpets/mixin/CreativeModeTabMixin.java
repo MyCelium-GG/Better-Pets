@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * Adds the Pet Scarf to the Tools and Utilities tab, so it can be found with the creative
+ * Adds the Pet Scarf and the Pet Santa Hat to the Tools and Utilities tab, so it can be found with the creative
  * search. Done here because each loader has its own tab event.
  */
 @Mixin(CreativeModeTab.class)
@@ -42,5 +42,10 @@ public abstract class CreativeModeTabMixin {
         ItemStack stack = Scarves.item(PetScarfItem.DEFAULT_COLOR);
         displayItems.add(stack);
         displayItemsSearchTab.add(stack.copy());
+        if (BetterPetsMod.petSantaHat != null) {
+            ItemStack hat = new ItemStack(BetterPetsMod.petSantaHat.get());
+            displayItems.add(hat);
+            displayItemsSearchTab.add(hat.copy());
+        }
     }
 }

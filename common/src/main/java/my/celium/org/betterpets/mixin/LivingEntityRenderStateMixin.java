@@ -5,7 +5,7 @@ import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
-/** Gives every living render state room for a pet's scarf, snow and sleep. */
+/** Gives every living render state room for a pet's scarf, snow, sleep and hat. */
 @Mixin(LivingEntityRenderState.class)
 public abstract class LivingEntityRenderStateMixin implements PetLookState {
     @Unique
@@ -14,6 +14,8 @@ public abstract class LivingEntityRenderStateMixin implements PetLookState {
     private int betterpets$snow;
     @Unique
     private boolean betterpets$asleep;
+    @Unique
+    private boolean betterpets$hat;
 
     @Override
     public int betterpets$scarf() {
@@ -31,7 +33,13 @@ public abstract class LivingEntityRenderStateMixin implements PetLookState {
     }
 
     @Override
-    public void betterpets$setLook(int scarf, int snow, boolean asleep) {
+    public boolean betterpets$hat() {
+        return betterpets$hat;
+    }
+
+    @Override
+    public void betterpets$setLook(int scarf, int snow, boolean asleep, boolean hat) {
+        betterpets$hat = hat;
         betterpets$scarf = scarf;
         betterpets$snow = snow;
         betterpets$asleep = asleep;

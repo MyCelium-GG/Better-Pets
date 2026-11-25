@@ -198,5 +198,18 @@
   "betterpets.config.sleepOnBed.desc": "Als je gaat slapen, gaan je honden aan het voeteneinde liggen (zittende honden blijven waar ze zijn).",
   "betterpets.config.snowyCoats": "Besneeuwde vacht",
   "betterpets.config.snowyCoats.desc": "Honden en katten in vallende sneeuw worden wit en schudden het af onder een dak.",
-  "betterpets.compass": "Z,ZW,W,NW,N,NO,O,ZO"
+  "betterpets.compass": "Z,ZW,W,NW,N,NO,O,ZO",
+  "item.betterpets.pet_santa_hat": "Kerstmuts voor huisdieren",
+  "item.betterpets.pet_santa_hat.hint": "Rechtsklik je hond, kat of papegaai om hem op te zetten",
+  "betterpets.book.wears": "Draagt",
+  "betterpets.book.hat_tip.1": "Of een kerstmuts voor honden, katten en papegaaien:",
+  "betterpets.book.hat_tip.2": "maak hem van 2 rode en 3 witte wol.",
+  "betterpets.hat.back": "De kerstmuts van %s zit weer in je inventaris.",
+  "betterpets.clothes.back": "De sjaal en kerstmuts van %s zitten weer in je inventaris.",
+  "betterpets.config.santaHats": "Kerstmutsen",
+  "betterpets.config.santaHats.desc": "Honden, katten en papegaaien kunnen een kerstmuts dragen: rechtsklik er je huisdier mee.",
+  "betterpets.config.parrotTalk": "Pratende papegaaien",
+  "betterpets.config.parrotTalk.desc": "Getemde papegaaien herhalen stukjes chat die ze in de buurt horen in een tekstballon.",
+  "betterpets.config.parrotTalkChance": "Kans dat de papegaai praat",
+  "betterpets.config.parrotTalkChance.desc": "Kans in procent dat een papegaai een chatbericht meteen herhaalt (later kan hij het nog steeds zeggen)."
 }

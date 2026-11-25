@@ -20,7 +20,7 @@ class PetPacketsTest {
         PetsPacket.Pet pet = new PetsPacket.Pet(id, "minecraft:wolf", "Rex", "&bRex", 14.5f, 40f, false, true, "12 m NW");
         PetsPacket.Details details = new PetsPacket.Details(42, true, true, true, false, false, "Sitting",
                 "1 64 -3 in the overworld", "2 d ago", "", "9.5 blocks/s", "2.9 blocks",
-                List.of(new PetsPacket.Food(9, "minecraft:cooked_beef", 16)), 0x3AB3DA, true);
+                List.of(new PetsPacket.Food(9, "minecraft:cooked_beef", 16)), 0x3AB3DA, true, true, true);
         PetsPacket packet = new PetsPacket(true, id, List.of(pet), details,
                 List.of(new PetsPacket.Person(UUID.randomUUID(), "Steve")), "Yum", true, true, false, true,
                 List.of(new PetsPacket.Setting("allowCall", "Allow calling", false, 1, 0, 1),
@@ -33,8 +33,8 @@ class PetPacketsTest {
 
     @Test
     void looksSurviveTheWire() {
-        PetLooksPacket packet = new PetLooksPacket(List.of(new PetLooksPacket.Look(7, 0xB02E26, 2, true),
-                new PetLooksPacket.Look(8, -1, 0, false)));
+        PetLooksPacket packet = new PetLooksPacket(List.of(new PetLooksPacket.Look(7, 0xB02E26, 2, true, true),
+                new PetLooksPacket.Look(8, -1, 0, false, false)));
         FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
         PetLooksPacket.CODEC.encode(buf, packet);
         assertEquals(packet, PetLooksPacket.CODEC.decode(buf));

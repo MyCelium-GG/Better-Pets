@@ -198,5 +198,18 @@
   "betterpets.config.sleepOnBed.desc": "Quando você vai dormir, seus cães deitam no pé da cama (cães sentados ficam onde estão).",
   "betterpets.config.snowyCoats": "Pelo nevado",
   "betterpets.config.snowyCoats.desc": "Cães e gatos na neve ficam brancos e sacodem a neve debaixo de um teto.",
-  "betterpets.compass": "S,SO,O,NO,N,NE,L,SE"
+  "betterpets.compass": "S,SO,O,NO,N,NE,L,SE",
+  "item.betterpets.pet_santa_hat": "Gorro de Papai Noel para pet",
+  "item.betterpets.pet_santa_hat.hint": "Clique com o botão direito no seu cachorro, gato ou papagaio para colocar",
+  "betterpets.book.wears": "Usa",
+  "betterpets.book.hat_tip.1": "Ou um gorro de Papai Noel, para cachorros, gatos e papagaios:",
+  "betterpets.book.hat_tip.2": "faça com 2 lãs vermelhas e 3 brancas.",
+  "betterpets.hat.back": "O gorro de Papai Noel de %s voltou para o seu inventário.",
+  "betterpets.clothes.back": "O cachecol e o gorro de Papai Noel de %s voltaram para o seu inventário.",
+  "betterpets.config.santaHats": "Gorros de Papai Noel",
+  "betterpets.config.santaHats.desc": "Cachorros, gatos e papagaios podem usar um gorro de Papai Noel: clique com o botão direito no seu pet com um.",
+  "betterpets.config.parrotTalk": "Papagaios falantes",
+  "betterpets.config.parrotTalk.desc": "Papagaios domesticados repetem trechos do chat que ouvem por perto em um balão de fala.",
+  "betterpets.config.parrotTalkChance": "Chance do papagaio falar",
+  "betterpets.config.parrotTalkChance.desc": "Chance em porcentagem de um papagaio repetir uma mensagem do chat na hora (ele ainda pode falar depois)."
 }

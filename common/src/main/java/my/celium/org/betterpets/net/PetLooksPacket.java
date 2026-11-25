@@ -11,7 +11,7 @@ import net.minecraft.resources.Identifier;
 
 /**
  * Server to client, twice a second: how the pets near this player look. Pets missing from the
- * list look like vanilla. {@code scarf} is 0xRRGGBB or -1, {@code snow} 0 (clean) to 3 (white).
+ * list look like vanilla. {@code scarf} is 0xRRGGBB or -1, {@code snow} 0 (clean) to 3 (white), {@code hat} a Santa hat.
  */
 public record PetLooksPacket(List<Look> looks) implements CustomPacketPayload {
     public static final Type<PetLooksPacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath(BetterPetsMod.ID, "looks"));
@@ -19,7 +19,7 @@ public record PetLooksPacket(List<Look> looks) implements CustomPacketPayload {
             PetLooksPacket::read);
     private static final int MAX = 512;
 
-    public record Look(int entityId, int scarf, int snow, boolean asleep) {
+    public record Look(int entityId, int scarf, int snow, boolean asleep, boolean hat) {
     }
 
     @Override
@@ -36,6 +36,7 @@ public record PetLooksPacket(List<Look> looks) implements CustomPacketPayload {
             buf.writeInt(look.scarf);
             buf.writeByte(look.snow);
             buf.writeBoolean(look.asleep);
+            buf.writeBoolean(look.hat);
         }
     }
 
@@ -43,7 +44,7 @@ public record PetLooksPacket(List<Look> looks) implements CustomPacketPayload {
         int size = Math.min(MAX, buf.readVarInt());
         List<Look> looks = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
-            looks.add(new Look(buf.readVarInt(), buf.readInt(), buf.readByte(), buf.readBoolean()));
+            looks.add(new Look(buf.readVarInt(), buf.readInt(), buf.readByte(), buf.readBoolean(), buf.readBoolean()));
         }
         return new PetLooksPacket(looks);
     }

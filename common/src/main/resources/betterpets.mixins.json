@@ -4,13 +4,18 @@
   "package": "my.celium.org.betterpets.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "CreativeModeTabMixin"
+    "CreativeModeTabMixin",
+    "DisplayAccessor",
+    "EntityMixin",
+    "PlayerListMixin",
+    "TextDisplayAccessor"
   ],
   "client": [
     "CatRendererMixin",
+    "LivingEntityRenderStateMixin",
     "LivingEntityRendererAccessor",
     "LivingEntityRendererMixin",
-    "LivingEntityRenderStateMixin",
+    "ParrotRendererMixin",
     "WolfModelMixin",
     "WolfRendererMixin"
   ],

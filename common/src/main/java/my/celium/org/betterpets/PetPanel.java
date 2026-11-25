@@ -14,6 +14,7 @@ import java.util.UUID;
 
 import my.celium.org.betterpets.net.PetActionPacket;
 import my.celium.org.betterpets.net.PetsPacket;
+import my.celium.org.betterpets.winter.SantaHats;
 import my.celium.org.betterpets.winter.Scarves;
 import my.celium.org.network.MycelNetwork;
 import my.celium.org.network.PacketDefinition;
@@ -246,8 +247,12 @@ public final class PetPanel {
                 if (!PetCare.isNear(player, entity)) {
                     return Result.fail(PetText.t(player, "far_call_first", name));
                 }
-                return Scarves.takeOff(player, entity) ? Result.ok(PetText.t(player, "scarf.back", name))
-                        : Result.NONE;
+                boolean hat = SantaHats.takeOff(player, entity);
+                boolean scarf = Scarves.takeOff(player, entity);
+                if (!hat && !scarf) {
+                    return Result.NONE;
+                }
+                return Result.ok(PetText.t(player, hat && scarf ? "clothes.back" : hat ? "hat.back" : "scarf.back", name));
             }
             case FORGET -> {
                 if (PetsCommand.forget(player, pet) > 0) {
@@ -389,7 +394,8 @@ public final class PetPanel {
                 pet.firstSeen > 0 ? PetText.ago(player, now - pet.firstSeen) : "",
                 pet.dead ? (pet.deathMessage == null ? PetText.t(player, "died") : pet.deathMessage) + ", " + PetText.ago(player, now - pet.lastSeen) : "",
                 speed, jump, entity == null ? List.of() : foods(player, entity),
-                entity == null ? -1 : Scarves.color(entity), entity != null && Scarves.fits(entity));
+                entity == null ? -1 : Scarves.color(entity), entity != null && Scarves.fits(entity),
+                entity != null && SantaHats.wears(entity), entity != null && SantaHats.fits(entity) && BetterPetsMod.santaHats.get());
     }
 
     private static List<PetsPacket.Food> foods(ServerPlayer player, Entity entity) {

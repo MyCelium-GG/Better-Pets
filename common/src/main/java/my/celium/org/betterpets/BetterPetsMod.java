@@ -19,6 +19,8 @@ import my.celium.org.betterpets.client.ClientLooks;
 import my.celium.org.betterpets.net.PetLooksPacket;
 import my.celium.org.betterpets.winter.PetScarfItem;
 import my.celium.org.betterpets.winter.Scarves;
+import my.celium.org.betterpets.winter.SantaHats;
+import my.celium.org.betterpets.talk.ParrotTalk;
 import my.celium.org.betterpets.winter.Winter;
 import java.util.List;
 import net.minecraft.ChatFormatting;
@@ -52,7 +54,7 @@ public final class BetterPetsMod {
     /** Messages in each player's language (assets/betterpets/lang). */
     public static final ModLang LANG = ModLang.of("betterpets", BetterPetsMod.class);
 
-    public static final ModMetadata META = ModMetadata.builder(ID, "Better Pets", "1.5.0")
+    public static final ModMetadata META = ModMetadata.builder(ID, "Better Pets", "1.6.0")
             .author("MyCelium")
             .website("https://www.curseforge.com/minecraft/mc-mods/better-pets")
             .updateUrl("https://wiki.mycelium-gg.org/updates/betterpets.json")
@@ -71,7 +73,11 @@ public final class BetterPetsMod {
     public static ConfigValue<Boolean> scarves;
     public static ConfigValue<Boolean> sleepOnBed;
     public static ConfigValue<Boolean> snowyCoats;
+    public static ConfigValue<Boolean> santaHats;
+    public static ConfigValue<Boolean> parrotTalk;
+    public static ConfigValue<Integer> parrotTalkChance;
     public static DeferredEntry<Item> petScarf;
+    public static DeferredEntry<Item> petSantaHat;
     public static MycelConfig config;
 
     private BetterPetsMod() {
@@ -98,6 +104,11 @@ public final class BetterPetsMod {
                 key -> new PetScarfItem(new Item.Properties().setId(key).stacksTo(16)
                         .component(DataComponents.LORE, new ItemLore(List.of(
                                 Component.translatable("item.betterpets.pet_scarf.hint")
+                                        .withStyle(style -> style.withItalic(false)).withStyle(ChatFormatting.GRAY))))));
+        petSantaHat = MycelRegistry.items(META).registerWithKey("pet_santa_hat",
+                key -> new Item(new Item.Properties().setId(key).stacksTo(16)
+                        .component(DataComponents.LORE, new ItemLore(List.of(
+                                Component.translatable("item.betterpets.pet_santa_hat.hint")
                                         .withStyle(style -> style.withItalic(false)).withStyle(ChatFormatting.GRAY))))));
     }
 
@@ -129,6 +140,12 @@ public final class BetterPetsMod {
                 "When you go to bed, your dogs lie down on the end of it (dogs told to sit stay put).");
         snowyCoats = builder.booleanValue("snowyCoats", true,
                 "Dogs and cats out in falling snow turn white, and shake it off under a roof.");
+        santaHats = builder.booleanValue("santaHats", true,
+                "Dogs, cats and parrots can wear a Pet Santa Hat: right-click your own pet with one.");
+        parrotTalk = builder.booleanValue("parrotTalk", true,
+                "Tamed parrots repeat bits of chat they hear nearby in a speech bubble.");
+        parrotTalkChance = builder.intValue("parrotTalkChance", 30, 0, 100,
+                "Percent chance that a parrot repeats a chat message right away (it may still bring it up later).");
         config = builder.build();
         PetStats.start();
 
@@ -170,6 +187,7 @@ public final class BetterPetsMod {
         PetGui.runPending();
         if (isModEnabled()) {
             PetTracker.tick(server);
+            ParrotTalk.tick(server);
         }
     }
 
@@ -185,7 +203,7 @@ public final class BetterPetsMod {
     /** Right-click-on-entity hook, both sides: {@code true} means the pet's menu took the click. */
     public static boolean onInteract(Player player, Entity target, boolean mainHand) {
         try {
-            if (Scarves.onInteract(player, target, mainHand)) {
+            if (Scarves.onInteract(player, target, mainHand) || SantaHats.onInteract(player, target, mainHand)) {
                 return true;
             }
             return PetMenu.onInteract(player, target, mainHand);

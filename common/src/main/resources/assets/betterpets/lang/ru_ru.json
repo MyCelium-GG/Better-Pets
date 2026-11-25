@@ -198,5 +198,18 @@
   "betterpets.config.sleepOnBed.desc": "Когда вы ложитесь спать, ваши собаки ложатся в ногах (сидящие собаки остаются на месте).",
   "betterpets.config.snowyCoats": "Снежная шерсть",
   "betterpets.config.snowyCoats.desc": "Собаки и кошки под снегопадом белеют и отряхиваются под крышей.",
-  "betterpets.compass": "Ю,ЮЗ,З,СЗ,С,СВ,В,ЮВ"
+  "betterpets.compass": "Ю,ЮЗ,З,СЗ,С,СВ,В,ЮВ",
+  "item.betterpets.pet_santa_hat": "Новогодняя шапка для питомца",
+  "item.betterpets.pet_santa_hat.hint": "ПКМ по своей собаке, кошке или попугаю, чтобы надеть",
+  "betterpets.book.wears": "Носит",
+  "betterpets.book.hat_tip.1": "Или новогоднюю шапку для собак, кошек и попугаев:",
+  "betterpets.book.hat_tip.2": "скрафтите её из 2 красной и 3 белой шерсти.",
+  "betterpets.hat.back": "Новогодняя шапка %s снова в вашем инвентаре.",
+  "betterpets.clothes.back": "Шарф и новогодняя шапка %s снова в вашем инвентаре.",
+  "betterpets.config.santaHats": "Новогодние шапки",
+  "betterpets.config.santaHats.desc": "Собаки, кошки и попугаи могут носить новогоднюю шапку: ПКМ ею по своему питомцу.",
+  "betterpets.config.parrotTalk": "Говорящие попугаи",
+  "betterpets.config.parrotTalk.desc": "Приручённые попугаи повторяют обрывки чата, услышанные рядом, в облачке.",
+  "betterpets.config.parrotTalkChance": "Шанс, что попугай заговорит",
+  "betterpets.config.parrotTalkChance.desc": "Шанс в процентах, что попугай сразу повторит сообщение из чата (позже он всё равно может его сказать)."
 }

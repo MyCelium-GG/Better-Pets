@@ -198,5 +198,18 @@
   "betterpets.config.sleepOnBed.desc": "Quand vous vous couchez, vos chiens s'allongent au pied du lit (les chiens assis restent sur place).",
   "betterpets.config.snowyCoats": "Pelage enneigé",
   "betterpets.config.snowyCoats.desc": "Chiens et chats sous la neige deviennent blancs et s'ébrouent à l'abri.",
-  "betterpets.compass": "S,SO,O,NO,N,NE,E,SE"
+  "betterpets.compass": "S,SO,O,NO,N,NE,E,SE",
+  "item.betterpets.pet_santa_hat": "Bonnet de Noël pour animal",
+  "item.betterpets.pet_santa_hat.hint": "Clic droit sur votre chien, chat ou perroquet pour le lui mettre",
+  "betterpets.book.wears": "Porte",
+  "betterpets.book.hat_tip.1": "Ou un bonnet de Noël, pour chiens, chats et perroquets :",
+  "betterpets.book.hat_tip.2": "fabriquez-le avec 2 laines rouges et 3 blanches.",
+  "betterpets.hat.back": "Le bonnet de Noël de %s est de retour dans votre inventaire.",
+  "betterpets.clothes.back": "L'écharpe et le bonnet de Noël de %s sont de retour dans votre inventaire.",
+  "betterpets.config.santaHats": "Bonnets de Noël",
+  "betterpets.config.santaHats.desc": "Chiens, chats et perroquets peuvent porter un bonnet de Noël : clic droit sur votre animal avec.",
+  "betterpets.config.parrotTalk": "Perroquets bavards",
+  "betterpets.config.parrotTalk.desc": "Les perroquets apprivoisés répètent des bouts du chat entendus à proximité dans une bulle.",
+  "betterpets.config.parrotTalkChance": "Chance de parole du perroquet",
+  "betterpets.config.parrotTalkChance.desc": "Pourcentage de chance qu'un perroquet répète tout de suite un message du chat (il peut aussi le redire plus tard)."
 }

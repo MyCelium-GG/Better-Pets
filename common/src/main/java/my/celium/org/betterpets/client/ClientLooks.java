@@ -6,7 +6,7 @@ import java.util.Map;
 import my.celium.org.betterpets.net.PetLooksPacket;
 
 /**
- * How the pets around this player look (scarf, snow, asleep), as last sent by the server.
+ * How the pets around this player look (scarf, snow, asleep, hat), as last sent by the server.
  * Read by the renderer for every pet each frame, so it is a plain map swapped in whole.
  */
 public final class ClientLooks {

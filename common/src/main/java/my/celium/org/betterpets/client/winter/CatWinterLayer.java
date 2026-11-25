@@ -8,7 +8,7 @@ import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.state.CatRenderState;
 
-/** Snow and scarf on a grown cat, drawn after vanilla's collar. */
+/** Snow, scarf and Santa hat on a grown cat, drawn after vanilla's collar. */
 public final class CatWinterLayer extends RenderLayer<CatRenderState, AbstractFelineModel<CatRenderState>> {
     public CatWinterLayer(RenderLayerParent<CatRenderState, AbstractFelineModel<CatRenderState>> renderer) {
         super(renderer);
@@ -29,6 +29,10 @@ public final class CatWinterLayer extends RenderLayer<CatRenderState, AbstractFe
         if (scarf >= 0) {
             coloredCutoutModelCopyLayerRender(WinterModels.catScarf(), WinterModels.SCARF, poseStack, collector,
                     lightCoords, state, 0xFF000000 | scarf, 3);
+        }
+        if (look.betterpets$hat()) {
+            coloredCutoutModelCopyLayerRender(WinterModels.catHat(), WinterModels.HAT, poseStack, collector,
+                    lightCoords, state, -1, 4);
         }
     }
 }

@@ -24,9 +24,9 @@ public abstract class LivingEntityRendererMixin {
         if (state instanceof PetLookState look) {
             PetLooksPacket.Look known = ClientLooks.get(entity.getId());
             if (known == null) {
-                look.betterpets$setLook(-1, 0, false);
+                look.betterpets$setLook(-1, 0, false, false);
             } else {
-                look.betterpets$setLook(known.scarf(), known.snow(), known.asleep());
+                look.betterpets$setLook(known.scarf(), known.snow(), known.asleep(), known.hat());
             }
         }
     }

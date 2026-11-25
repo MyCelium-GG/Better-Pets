@@ -198,5 +198,18 @@
   "betterpets.config.sleepOnBed.desc": "When you go to bed, your dogs lie down on the end of it (dogs told to sit stay put).",
   "betterpets.config.snowyCoats": "Snowy coats",
   "betterpets.config.snowyCoats.desc": "Dogs and cats out in falling snow turn white, and shake it off under a roof.",
-  "betterpets.compass": "S,SW,W,NW,N,NE,E,SE"
+  "betterpets.compass": "S,SW,W,NW,N,NE,E,SE",
+  "item.betterpets.pet_santa_hat": "Pet Santa Hat",
+  "item.betterpets.pet_santa_hat.hint": "Right-click your dog, cat or parrot to put it on",
+  "betterpets.book.wears": "Wears",
+  "betterpets.book.hat_tip.1": "Or a Pet Santa Hat, for dogs, cats and parrots:",
+  "betterpets.book.hat_tip.2": "craft it from 2 red and 3 white wool.",
+  "betterpets.hat.back": "%s's Santa hat is back in your inventory.",
+  "betterpets.clothes.back": "%s's scarf and Santa hat are back in your inventory.",
+  "betterpets.config.santaHats": "Santa hats",
+  "betterpets.config.santaHats.desc": "Dogs, cats and parrots can wear a Pet Santa Hat: right-click your own pet with one.",
+  "betterpets.config.parrotTalk": "Talking parrots",
+  "betterpets.config.parrotTalk.desc": "Tamed parrots repeat bits of chat they hear nearby in a speech bubble.",
+  "betterpets.config.parrotTalkChance": "Parrot talk chance",
+  "betterpets.config.parrotTalkChance.desc": "Percent chance that a parrot repeats a chat message right away (it may still bring it up later)."
 }

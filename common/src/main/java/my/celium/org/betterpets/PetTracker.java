@@ -67,6 +67,7 @@ public final class PetTracker {
         PetMenu.clear();
         PetPanel.clear();
         Winter.clear();
+        my.celium.org.betterpets.talk.ParrotTalk.clear();
         ticks = 0;
         STORE.load(server.getWorldPath(LevelResource.ROOT).resolve("data"));
         PetStats.worldStarted();
@@ -82,6 +83,7 @@ public final class PetTracker {
         PetMenu.clear();
         PetPanel.clear();
         Winter.clear();
+        my.celium.org.betterpets.talk.ParrotTalk.clear();
     }
 
     public static void tick(MinecraftServer server) {
@@ -220,6 +222,7 @@ public final class PetTracker {
 
     private static void onDeath(MinecraftServer server, UUID owner, LivingEntity living) {
         Scarves.dropOnDeath(living);
+        my.celium.org.betterpets.winter.SantaHats.dropOnDeath(living);
         Winter.forget(living.getUUID());
         update(owner, living);
         PetRecord pet = record(owner, living.getUUID());

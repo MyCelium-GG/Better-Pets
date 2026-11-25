@@ -198,5 +198,18 @@
   "betterpets.config.sleepOnBed.desc": "Wenn du schlafen gehst, legen sich deine Hunde ans Fußende (sitzende Hunde bleiben, wo sie sind).",
   "betterpets.config.snowyCoats": "Schneefell",
   "betterpets.config.snowyCoats.desc": "Hunde und Katzen im Schneefall werden weiß und schütteln es unter einem Dach ab.",
-  "betterpets.compass": "S,SW,W,NW,N,NO,O,SO"
+  "betterpets.compass": "S,SW,W,NW,N,NO,O,SO",
+  "item.betterpets.pet_santa_hat": "Haustier-Weihnachtsmütze",
+  "item.betterpets.pet_santa_hat.hint": "Rechtsklick auf deinen Hund, deine Katze oder deinen Papagei, um sie aufzusetzen",
+  "betterpets.book.wears": "Trägt",
+  "betterpets.book.hat_tip.1": "Oder eine Haustier-Weihnachtsmütze für Hunde, Katzen und Papageien:",
+  "betterpets.book.hat_tip.2": "aus 2 roter und 3 weißer Wolle herstellen.",
+  "betterpets.hat.back": "Die Weihnachtsmütze von %s ist wieder in deinem Inventar.",
+  "betterpets.clothes.back": "Schal und Weihnachtsmütze von %s sind wieder in deinem Inventar.",
+  "betterpets.config.santaHats": "Weihnachtsmützen",
+  "betterpets.config.santaHats.desc": "Hunde, Katzen und Papageien können eine Haustier-Weihnachtsmütze tragen: Rechtsklick damit auf dein Haustier.",
+  "betterpets.config.parrotTalk": "Sprechende Papageien",
+  "betterpets.config.parrotTalk.desc": "Gezähmte Papageien wiederholen Teile des Chats in ihrer Nähe in einer Sprechblase.",
+  "betterpets.config.parrotTalkChance": "Papageien-Sprechchance",
+  "betterpets.config.parrotTalkChance.desc": "Chance in Prozent, dass ein Papagei eine Chatnachricht sofort wiederholt (später kann er sie trotzdem noch sagen)."
 }

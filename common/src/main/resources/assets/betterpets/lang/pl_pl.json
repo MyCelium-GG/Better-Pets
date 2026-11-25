@@ -198,5 +198,18 @@
   "betterpets.config.sleepOnBed.desc": "Gdy idziesz spać, twoje psy kładą się w nogach łóżka (siedzące psy zostają na miejscu).",
   "betterpets.config.snowyCoats": "Śnieżna sierść",
   "betterpets.config.snowyCoats.desc": "Psy i koty w padającym śniegu bieleją i otrząsają się pod dachem.",
-  "betterpets.compass": "S,SW,W,NW,N,NE,E,SE"
+  "betterpets.compass": "S,SW,W,NW,N,NE,E,SE",
+  "item.betterpets.pet_santa_hat": "Czapka Mikołaja dla zwierzaka",
+  "item.betterpets.pet_santa_hat.hint": "Kliknij PPM swojego psa, kota lub papugę, aby ją założyć",
+  "betterpets.book.wears": "Nosi",
+  "betterpets.book.hat_tip.1": "Albo czapkę Mikołaja dla psów, kotów i papug:",
+  "betterpets.book.hat_tip.2": "stwórz ją z 2 czerwonej i 3 białej wełny.",
+  "betterpets.hat.back": "Czapka Mikołaja %s wróciła do twojego ekwipunku.",
+  "betterpets.clothes.back": "Szalik i czapka Mikołaja %s wróciły do twojego ekwipunku.",
+  "betterpets.config.santaHats": "Czapki Mikołaja",
+  "betterpets.config.santaHats.desc": "Psy, koty i papugi mogą nosić czapkę Mikołaja: kliknij nią PPM swojego zwierzaka.",
+  "betterpets.config.parrotTalk": "Gadające papugi",
+  "betterpets.config.parrotTalk.desc": "Oswojone papugi powtarzają fragmenty czatu usłyszane w pobliżu w dymku.",
+  "betterpets.config.parrotTalkChance": "Szansa, że papuga przemówi",
+  "betterpets.config.parrotTalkChance.desc": "Procentowa szansa, że papuga od razu powtórzy wiadomość z czatu (później i tak może ją powiedzieć)."
 }

@@ -198,5 +198,18 @@
   "betterpets.config.sleepOnBed.desc": "你上床睡觉时，你的狗会趴在床尾（坐着的狗原地不动）。",
   "betterpets.config.snowyCoats": "雪中毛色",
   "betterpets.config.snowyCoats.desc": "在下雪时的狗和猫会变白，进屋后会抖掉。",
-  "betterpets.compass": "南,西南,西,西北,北,东北,东,东南"
+  "betterpets.compass": "南,西南,西,西北,北,东北,东,东南",
+  "item.betterpets.pet_santa_hat": "宠物圣诞帽",
+  "item.betterpets.pet_santa_hat.hint": "右键你的狗、猫或鹦鹉为它戴上",
+  "betterpets.book.wears": "穿戴",
+  "betterpets.book.hat_tip.1": "或者给狗、猫和鹦鹉戴上宠物圣诞帽:",
+  "betterpets.book.hat_tip.2": "用 2 个红色羊毛和 3 个白色羊毛合成。",
+  "betterpets.hat.back": "%s 的圣诞帽已回到你的物品栏。",
+  "betterpets.clothes.back": "%s 的围巾和圣诞帽已回到你的物品栏。",
+  "betterpets.config.santaHats": "圣诞帽",
+  "betterpets.config.santaHats.desc": "狗、猫和鹦鹉可以戴宠物圣诞帽:拿着它右键你的宠物。",
+  "betterpets.config.parrotTalk": "会说话的鹦鹉",
+  "betterpets.config.parrotTalk.desc": "驯服的鹦鹉会用对话气泡重复附近听到的聊天片段。",
+  "betterpets.config.parrotTalkChance": "鹦鹉说话概率",
+  "betterpets.config.parrotTalkChance.desc": "鹦鹉立即重复一条聊天消息的概率(百分比)。它之后仍可能说起。"
 }

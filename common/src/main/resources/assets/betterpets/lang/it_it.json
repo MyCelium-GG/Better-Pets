@@ -198,5 +198,18 @@
   "betterpets.config.sleepOnBed.desc": "Quando vai a letto, i tuoi cani si sdraiano ai piedi (i cani seduti restano dove sono).",
   "betterpets.config.snowyCoats": "Pelo innevato",
   "betterpets.config.snowyCoats.desc": "Cani e gatti sotto la neve diventano bianchi e se la scrollano al coperto.",
-  "betterpets.compass": "S,SO,O,NO,N,NE,E,SE"
+  "betterpets.compass": "S,SO,O,NO,N,NE,E,SE",
+  "item.betterpets.pet_santa_hat": "Cappello di Babbo Natale per animali",
+  "item.betterpets.pet_santa_hat.hint": "Clicca col destro sul tuo cane, gatto o pappagallo per metterlo",
+  "betterpets.book.wears": "Indossa",
+  "betterpets.book.hat_tip.1": "Oppure un cappello di Babbo Natale per cani, gatti e pappagalli:",
+  "betterpets.book.hat_tip.2": "crealo con 2 lane rosse e 3 bianche.",
+  "betterpets.hat.back": "Il cappello di Babbo Natale di %s è tornato nel tuo inventario.",
+  "betterpets.clothes.back": "La sciarpa e il cappello di Babbo Natale di %s sono tornati nel tuo inventario.",
+  "betterpets.config.santaHats": "Cappelli di Babbo Natale",
+  "betterpets.config.santaHats.desc": "Cani, gatti e pappagalli possono indossare un cappello di Babbo Natale: clicca col destro sul tuo animale con uno.",
+  "betterpets.config.parrotTalk": "Pappagalli parlanti",
+  "betterpets.config.parrotTalk.desc": "I pappagalli addomesticati ripetono pezzi di chat sentiti vicino in un fumetto.",
+  "betterpets.config.parrotTalkChance": "Probabilità che il pappagallo parli",
+  "betterpets.config.parrotTalkChance.desc": "Probabilità in percentuale che un pappagallo ripeta subito un messaggio della chat (può comunque dirlo più tardi)."
 }

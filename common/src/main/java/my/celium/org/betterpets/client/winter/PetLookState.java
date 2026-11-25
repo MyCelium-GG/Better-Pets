@@ -1,7 +1,7 @@
 package my.celium.org.betterpets.client.winter;
 
 /**
- * Added to every living entity's render state by a mixin, so the winter layers and the sleeping
+ * Added to every living entity's render state by a mixin, so the winter layers (scarf, snow, hat) and the sleeping
  * pose can read the pet's look without the entity.
  */
 public interface PetLookState {
@@ -13,5 +13,8 @@ public interface PetLookState {
 
     boolean betterpets$asleep();
 
-    void betterpets$setLook(int scarf, int snow, boolean asleep);
+    /** Wears a Santa hat. */
+    boolean betterpets$hat();
+
+    void betterpets$setLook(int scarf, int snow, boolean asleep, boolean hat);
 }

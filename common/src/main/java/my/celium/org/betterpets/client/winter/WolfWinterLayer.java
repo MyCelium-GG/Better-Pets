@@ -8,7 +8,7 @@ import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.state.WolfRenderState;
 
-/** Snow and scarf on a grown dog, drawn after vanilla's collar. */
+/** Snow, scarf and Santa hat on a grown dog, drawn after vanilla's collar. */
 public final class WolfWinterLayer extends RenderLayer<WolfRenderState, WolfModel> {
     public WolfWinterLayer(RenderLayerParent<WolfRenderState, WolfModel> renderer) {
         super(renderer);
@@ -29,6 +29,10 @@ public final class WolfWinterLayer extends RenderLayer<WolfRenderState, WolfMode
         if (scarf >= 0) {
             coloredCutoutModelCopyLayerRender(WinterModels.wolfScarf(), WinterModels.SCARF, poseStack, collector,
                     lightCoords, state, 0xFF000000 | scarf, 3);
+        }
+        if (look.betterpets$hat()) {
+            coloredCutoutModelCopyLayerRender(WinterModels.wolfHat(), WinterModels.HAT, poseStack, collector,
+                    lightCoords, state, -1, 4);
         }
     }
 }

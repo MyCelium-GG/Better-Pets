@@ -105,7 +105,7 @@ public final class Winter {
         }
     }
 
-    /** A pet's scarf changed: tell the players around it right away. */
+    /** A pet's scarf or hat changed: tell the players around it right away. */
     static void lookChanged(Entity pet) {
         dirty = true;
     }
@@ -319,8 +319,9 @@ public final class Winter {
                 int scarf = BetterPetsMod.scarves.get() && Scarves.fits(pet) ? Scarves.color(pet) : -1;
                 int snow = snowLevel(SNOW.getOrDefault(pet.getUUID(), 0f));
                 boolean asleep = isAsleep(pet);
-                if (scarf >= 0 || snow > 0 || asleep) {
-                    list.add(new PetLooksPacket.Look(pet.getId(), scarf, snow, asleep));
+                boolean hat = BetterPetsMod.santaHats.get() && SantaHats.fits(pet) && SantaHats.wears(pet);
+                if (scarf >= 0 || snow > 0 || asleep || hat) {
+                    list.add(new PetLooksPacket.Look(pet.getId(), scarf, snow, asleep, hat));
                 }
             }
             boolean sentBefore = SENT.contains(player.getUUID());

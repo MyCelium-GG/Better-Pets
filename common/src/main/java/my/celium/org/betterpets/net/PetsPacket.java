@@ -60,11 +60,12 @@ public record PetsPacket(boolean open, UUID selected, List<Pet> pets, Details de
 
     /**
      * The selected pet, in full. {@code entityId} is -1 when it is not loaded. {@code scarf} is
-     * the colour it wears (0xRRGGBB) or -1; {@code scarfFits} whether it could wear one.
+     * the colour it wears (0xRRGGBB) or -1; {@code scarfFits} whether it could wear one; {@code hat}
+     * and {@code hatFits} the same for the Santa hat.
      */
     public record Details(int entityId, boolean near, boolean hungry, boolean canSit, boolean sitting,
             boolean hasInventory, String status, String where, String since, String death, String speed, String jump,
-            List<Food> foods, int scarf, boolean scarfFits) {
+            List<Food> foods, int scarf, boolean scarfFits, boolean hat, boolean hatFits) {
     }
 
     @Override
@@ -106,6 +107,8 @@ public record PetsPacket(boolean open, UUID selected, List<Pet> pets, Details de
         });
         buf.writeInt(d.scarf);
         buf.writeBoolean(d.scarfFits);
+        buf.writeBoolean(d.hat);
+        buf.writeBoolean(d.hatFits);
         list(buf, p.players, (b, person) -> {
             b.writeUUID(person.id);
             b.writeUtf(person.name);
@@ -135,7 +138,7 @@ public record PetsPacket(boolean open, UUID selected, List<Pet> pets, Details de
         Details details = new Details(buf.readVarInt(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean(),
                 buf.readBoolean(), buf.readBoolean(), buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readUtf(),
                 buf.readUtf(), buf.readUtf(), list(buf, b -> new Food(b.readVarInt(), b.readUtf(), b.readVarInt())),
-                buf.readInt(), buf.readBoolean());
+                buf.readInt(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean());
         List<Person> players = list(buf, b -> new Person(b.readUUID(), b.readUtf()));
         String notice = buf.readUtf();
         boolean noticeOk = buf.readBoolean();

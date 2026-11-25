@@ -6,6 +6,18 @@ Better Pets is versioned semantically (`MAJOR.MINOR.PATCH`).
 It runs on Minecraft 26.3, 26.2 and 26.1 (Fabric + Forge + NeoForge, Java 25) and requires
 [Mycel](https://github.com/MyCelium-GG/MyCel-Lib) (`my.celium.org`).
 
+## [1.6.0] - 2026-11-25
+
+The Christmas update.
+
+### Added
+- Pet Santa Hat: craft it from 2 red and 3 white wool, then right-click your own dog, cat or parrot with it. The hat turns and tilts with the head, stays on a parrot riding your shoulder, and drops when the pet dies. Take it off in the pet book.
+- Talking parrots: a tamed parrot near someone who chats may say the end of it back a moment later, in a speech bubble above its head, and now and then brings up a line it heard while you are around. Everyone sees the bubble, even players without the mod. Settings `parrotTalk` and `parrotTalkChance` (percent, default 30).
+- Setting `santaHats` to turn the hats off.
+
+### Changed
+- The pet book's Scarf row is now "Wears": it shows the scarf and the hat, and Take off gives both back.
+
 ## [1.5.0] - 2026-11-19
 
 ### Added

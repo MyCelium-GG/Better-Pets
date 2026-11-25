@@ -198,5 +198,18 @@
   "betterpets.config.sleepOnBed.desc": "あなたが寝ると、犬がベッドの足元で横になります（お座り中の犬はそのまま）。",
   "betterpets.config.snowyCoats": "雪をかぶった毛並み",
   "betterpets.config.snowyCoats.desc": "雪の中の犬と猫は白くなり、屋根の下で振り払います。",
-  "betterpets.compass": "南,南西,西,北西,北,北東,東,南東"
+  "betterpets.compass": "南,南西,西,北西,北,北東,東,南東",
+  "item.betterpets.pet_santa_hat": "ペット用サンタ帽",
+  "item.betterpets.pet_santa_hat.hint": "自分の犬・猫・オウムを右クリックしてかぶせる",
+  "betterpets.book.wears": "着用",
+  "betterpets.book.hat_tip.1": "または犬・猫・オウム用のペット用サンタ帽:",
+  "betterpets.book.hat_tip.2": "赤い羊毛2つと白い羊毛3つで作れます。",
+  "betterpets.hat.back": "%s のサンタ帽がインベントリに戻りました。",
+  "betterpets.clothes.back": "%s のマフラーとサンタ帽がインベントリに戻りました。",
+  "betterpets.config.santaHats": "サンタ帽",
+  "betterpets.config.santaHats.desc": "犬・猫・オウムはペット用サンタ帽をかぶれます。帽子で自分のペットを右クリック。",
+  "betterpets.config.parrotTalk": "おしゃべりオウム",
+  "betterpets.config.parrotTalk.desc": "飼いならしたオウムが近くで聞いたチャットの一部を吹き出しでまねします。",
+  "betterpets.config.parrotTalkChance": "オウムがしゃべる確率",
+  "betterpets.config.parrotTalkChance.desc": "オウムがチャットをすぐにまねする確率(%)。あとで言うこともあります。"
 }

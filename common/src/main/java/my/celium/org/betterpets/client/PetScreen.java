@@ -567,7 +567,7 @@ public final class PetScreen extends Screen {
 
     private boolean overTakeOff(double mx, double my) {
         PetsPacket.Details d = state.details();
-        return contentsPage < 0 && !giving && d.scarfFits() && d.scarf() >= 0
+        return contentsPage < 0 && !giving && (d.scarf() >= 0 || d.hat())
                 && mx >= takeOffX() && mx < rightX1() && my >= scarfY() - 1 && my < scarfY() + 10;
     }
 
@@ -1179,28 +1179,54 @@ public final class PetScreen extends Screen {
 
     private void drawScarf(GuiGraphicsExtractor gfx, PetsPacket.Details d, int x, int w, int mx, int my) {
         int y = scarfY();
-        gfx.text(font, tr("book.scarf"), x, y, FADED, false);
+        gfx.text(font, tr("book.wears"), x, y, FADED, false);
         int vx = x + LABEL_W;
-        if (!d.scarfFits()) {
+        if (!d.scarfFits() && !d.hatFits() && d.scarf() < 0 && !d.hat()) {
             gfx.text(font, Ui.fit(font, tr("book.scarf_no_fit"), w - LABEL_W), vx, y, FADED, false);
             return;
         }
-        if (d.scarf() < 0) {
+        if (d.scarf() < 0 && !d.hat()) {
             gfx.text(font, Ui.fit(font, tr("book.scarf_none"), w - LABEL_W), vx, y, FADED, false);
             if (mx >= vx && mx < x + w && my >= y - 1 && my < y + 10) {
-                gfx.setComponentTooltipForNextFrame(font, List.of(
-                        Component.literal(tr("book.scarf_tip.1")),
-                        Component.literal(tr("book.scarf_tip.2")),
-                        Component.literal(tr("book.scarf_tip.3"))), mx, my);
+                List<Component> tip = new java.util.ArrayList<>();
+                if (d.scarfFits()) {
+                    tip.add(Component.literal(tr("book.scarf_tip.1")));
+                    tip.add(Component.literal(tr("book.scarf_tip.2")));
+                    tip.add(Component.literal(tr("book.scarf_tip.3")));
+                }
+                if (d.hatFits()) {
+                    tip.add(Component.literal(tr("book.hat_tip.1")));
+                    tip.add(Component.literal(tr("book.hat_tip.2")));
+                }
+                gfx.setComponentTooltipForNextFrame(font, tip, mx, my);
             }
             return;
         }
-        gfx.fill(vx - 1, y - 1, vx + 17, y + 8, INK);
-        gfx.fill(vx, y, vx + 16, y + 7, 0xFF000000 | d.scarf());
+        if (d.scarf() >= 0) {
+            gfx.fill(vx - 1, y - 1, vx + 17, y + 8, INK);
+            gfx.fill(vx, y, vx + 16, y + 7, 0xFF000000 | d.scarf());
+            vx += 22;
+        }
+        if (d.hat()) {
+            drawHatIcon(gfx, vx, y - 1);
+        }
         boolean hot = overTakeOff(mx, my);
         int tx = takeOffX();
         gfx.text(font, tr("book.take_off"), tx, y, hot ? RED_HOT : RED, false);
         gfx.fill(tx, y + 9, tx + font.width(tr("book.take_off")), y + 10, hot ? RED_HOT : RED);
+    }
+
+    /** A tiny Santa hat, 9 x 9 pixels, drawn in the ink style of the scarf swatch. */
+    private static void drawHatIcon(GuiGraphicsExtractor gfx, int x, int y) {
+        int red = 0xFFC8282C;
+        int white = 0xFFF4F1EA;
+        gfx.fill(x + 3, y + 1, x + 6, y + 3, red);
+        gfx.fill(x + 2, y + 3, x + 7, y + 5, red);
+        gfx.fill(x + 1, y + 5, x + 8, y + 6, red);
+        gfx.fill(x + 6, y + 1, x + 8, y + 2, red);
+        gfx.fill(x + 8, y, x + 10, y + 2, white);
+        gfx.fill(x, y + 6, x + 9, y + 8, white);
+        gfx.fill(x, y + 8, x + 9, y + 9, INK);
     }
 
     private void drawFood(GuiGraphicsExtractor gfx, PetsPacket.Details d, int mx, int my) {

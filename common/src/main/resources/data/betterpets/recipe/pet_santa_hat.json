@@ -1,0 +1,35 @@
+{
+  "fabric:load_conditions": [
+    {
+      "condition": "fabric:all_mods_loaded",
+      "values": [
+        "mycel"
+      ]
+    }
+  ],
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "mycel"
+    }
+  ],
+  "forge:condition": {
+    "type": "forge:mod_loaded",
+    "modid": "mycel"
+  },
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    " W",
+    "RR",
+    "WW"
+  ],
+  "key": {
+    "W": "minecraft:white_wool",
+    "R": "minecraft:red_wool"
+  },
+  "result": {
+    "id": "betterpets:pet_santa_hat",
+    "count": 1
+  }
+}
