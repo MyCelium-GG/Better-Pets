@@ -2,7 +2,11 @@
 
 Owning a dog, cat, parrot or horse, done right. `/pets` lists every pet you own and where it is, even in unloaded chunks. Find it with a glow and an on-screen arrow, call it to you, rename it, give it to a friend. Shift-right-click a pet to open its page in your pet book.
 
-**New in 1.4.0, the pet book:** every pet gets its own page in a book, with a contents page listing them all. Pick one of five covers, including a snowy Winter cover with icicles and falling snow, and change the settings right inside the book or with the new `/betterpets` command.
+**New in 1.6.0, the Christmas update:** put a Santa hat on your dog, cat or parrot, and tamed parrots now repeat bits of chat in a speech bubble above their heads, and bring them up again later.
+
+![A parrot, a cat and a dog in a blue scarf, all wearing Santa hats](https://wiki.mycelium-gg.org/betterpets/img/santa-hats.png)
+
+**1.4.0, the pet book:** every pet gets its own page in a book, with a contents page listing them all. Pick one of five covers, including a snowy Winter cover with icicles and falling snow, and change the settings right inside the book or with the new `/betterpets` command.
 
 **Winter update:** knit your dog or cat a scarf in any colour, watch your dogs curl up on the end of your bed at night, and see them come in from the snow all white and shake it off.
 
@@ -10,6 +14,8 @@ Owning a dog, cat, parrot or horse, done right. `/pets` lists every pet you own 
 
 ![The same page of the pet book in five covers: Winter, Midnight, Forest, Leather and Classic](https://wiki.mycelium-gg.org/betterpets/img/book-covers.png?v=140)
 
+- Pet Santa Hat: craft it from 2 red and 3 white wool, right-click your dog, cat or parrot
+- Talking parrots: tamed parrots repeat the chat in a speech bubble
 - Pet Scarf: craft it from 3 wool and a string, dye it, right-click your dog or cat
 - Dogs sleep on your bed with you, like cats do
 - Snowy coats in falling snow, shaken off under a roof

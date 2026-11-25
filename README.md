@@ -33,6 +33,12 @@
 
 ![Dogs and cats in knitted scarves, one lying at the foot of a bed](https://wiki.mycelium-gg.org/betterpets/img/winter-scarves.png)
 
+![Christmas update](https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/d8833defdc96/docs/img/banners/christmas-update.svg)
+
+<img src="https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/d8833defdc96/docs/img/banners/christmas-update-box.svg" alt="Pet Santa Hat: Craft it from 2 red and 3 white wool, then right-click your own dog, cat or parrot with it. It turns with the head, stays on a parrot riding your shoulder, and drops if the pet dies. Talking parrots: A tamed parrot near someone who chats may say the end of it back in a speech bubble above its head, and brings up lines it heard later. Everyone sees the bubble." width="100%">
+
+![A parrot, a cat and a dog in a blue scarf, all wearing Santa hats](https://wiki.mycelium-gg.org/betterpets/img/santa-hats.png)
+
 ![Behavior](https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/86b553712e6c/docs/img/banners/behavior.svg)
 
 <img src="https://raw.githubusercontent.com/MyCelium-GG/Better-Pets/86b553712e6c/docs/img/banners/behavior-box.svg" alt="Every tamed animal with an owner counts as a pet: wolves, cats, parrots, horses, donkeys, mules, llamas, camels, nautiluses and modded tamables. /pets: Lists them all, one line each, with health, distance and buttons. Pets in unloaded chunks keep their last known spot (&quot;2 h ago&quot;). /pets find <pet>: Makes the pet glow for 30 s and shows an arrow with the distance above the hotbar. /pets call <pet>:" width="100%">
